@@ -1,13 +1,14 @@
 services:
   razorgen:
-    image: razorgen:latest
+    image: jjbobz/razorgen:latest
+    build: .
     ports:
-      - "53000:53000"
+      - "43000:43000"
     volumes:
-      - ./.env:/app/.env:ro    # mount your .env read-only — never baked into the image
+      - /mnt/cache/appdata/razorgen/.env:/app/.env:ro
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:53000/login"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:43000/login"]
       interval: 30s
       timeout: 5s
       retries: 3

@@ -17,7 +17,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Open **http://localhost:3000** and sign in.
+Open **http://localhost:43000** and sign in.
 
 That's it. No Node.js, no npm, nothing else to install.
 
@@ -118,7 +118,7 @@ Copy `.env.example` to `.env` and fill in:
 |---|---|---|
 | `ANTHROPIC_API_KEY` | Yes | Your key from console.anthropic.com |
 | `ANTHROPIC_MODEL` | No | Defaults to `claude-sonnet-4-20250514` |
-| `PORT` | No | Defaults to `3000` |
+| `PORT` | No | Defaults to `43000` |
 | `USERS` | Yes | `name:password,name2:password2` |
 | `ALLOWED_IPS` | No | Comma-separated IPs, blank = allow all |
 
@@ -147,7 +147,7 @@ docker compose up -d --build
 
 ## Behind a reverse proxy
 
-Point nginx/Caddy/Traefik at port 3000.
+Point nginx/Caddy/Traefik at port 43000.
 
 **nginx:**
 ```nginx
@@ -155,7 +155,7 @@ server {
     listen 443 ssl;
     server_name razorgen.yourdomain.com;
     location / {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://localhost:43000;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $remote_addr;
     }
@@ -165,7 +165,7 @@ server {
 **Caddy:**
 ```
 razorgen.yourdomain.com {
-    reverse_proxy localhost:3000
+    reverse_proxy localhost:43000
 }
 ```
 

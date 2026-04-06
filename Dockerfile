@@ -13,10 +13,10 @@ RUN chown -R razorgen:razorgen /app
 
 USER razorgen
 
-EXPOSE 3000
+EXPOSE 43000
 
 # Health check — Docker will restart container if this fails
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget -qO- http://localhost:3000/login || exit 1
+  CMD wget -qO- http://localhost:43000/login || exit 1
 
 CMD ["node", "server.js"]
