@@ -1,7 +1,6 @@
 services:
   razorgen:
-    image: razorgen:local      # use local build; swap to yourdockerhubuser/razorgen:latest to pull from Hub
-    build: .                   # comment this out if pulling from Docker Hub instead of building locally
+    image: razorgen:latest
     ports:
       - "53000:53000"
     volumes:
