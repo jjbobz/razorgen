@@ -1,0 +1,8 @@
+# Never commit the .env — it has your API key and passwords
+.env
+
+# Node
+node_modules/
+
+# Docker
+.env

@@ -1,0 +1,14 @@
+services:
+  razorgen:
+    image: razorgen:local      # use local build; swap to yourdockerhubuser/razorgen:latest to pull from Hub
+    build: .                   # comment this out if pulling from Docker Hub instead of building locally
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./.env:/app/.env:ro    # mount your .env read-only — never baked into the image
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/login"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
