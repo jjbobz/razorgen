@@ -7,8 +7,10 @@
 const http   = require('http');
 const https  = require('https');
 const fs     = require('fs');
+const os     = require('os');
 const path   = require('path');
 const crypto = require('crypto');
+const { exec } = require('child_process');
 
 // ─── Load .env ────────────────────────────────────────────────────────────────
 function loadEnv() {
@@ -33,6 +35,19 @@ loadEnv();
 const PORT    = parseInt(process.env.PORT || '43000');
 const API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const MODEL   = process.env.ANTHROPIC_MODEL   || 'claude-sonnet-4-20250514';
+const ALLOWED_MODELS = (process.env.ANTHROPIC_ALLOWED_MODELS || [
+  'claude-sonnet-4-20250514',
+  'claude-opus-4-5',
+  'claude-haiku-4-5-20251001'
+].join(','))
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+const TRUST_PROXY = ['1', 'true', 'yes', 'on'].includes(
+  (process.env.TRUST_PROXY || '').trim().toLowerCase()
+);
+const VALIDATOR_COMMAND = (process.env.RAZOR_VALIDATE_COMMAND || '').trim();
+const VALIDATOR_TIMEOUT_MS = parseInt(process.env.RAZOR_VALIDATE_TIMEOUT_MS || '15000', 10);
 const SESSION_TTL = 8 * 60 * 60 * 1000; // 8 hours
 
 // ─── Users ────────────────────────────────────────────────────────────────────
@@ -58,7 +73,8 @@ const ALLOWED_IPS = (process.env.ALLOWED_IPS || '')
   .split(',').map(s => s.trim()).filter(Boolean);
 
 function getIp(req) {
-  return ((req.headers['x-forwarded-for'] || req.socket.remoteAddress || '')
+  const source = TRUST_PROXY ? req.headers['x-forwarded-for'] : req.socket.remoteAddress;
+  return ((source || '')
     .split(',')[0].trim());
 }
 function ipAllowed(ip) {
@@ -101,6 +117,100 @@ function readBody(req) {
     req.on('data', c => b += c);
     req.on('end', () => res(b));
     req.on('error', rej);
+  });
+}
+
+function readJsonBody(req, res) {
+  return readBody(req).then(body => {
+    try {
+      return JSON.parse(body || '{}');
+    } catch {
+      res.writeHead(400, {'Content-Type':'application/json'});
+      res.end(JSON.stringify({error:{message:'Invalid JSON body'}}));
+      return null;
+    }
+  });
+}
+
+function countMatches(text, regex) {
+  const matches = text.match(regex);
+  return matches ? matches.length : 0;
+}
+
+function lintTemplate(template, mode) {
+  const findings = [];
+  const trimmed = (template || '').trim();
+  if (!trimmed) {
+    findings.push({ level: 'error', message: 'Template is empty.' });
+    return findings;
+  }
+
+  if (countMatches(trimmed, /@\{/g) !== countMatches(trimmed, /\}/g)) {
+    findings.push({ level: 'warn', message: 'The number of `@{` blocks and closing braces does not appear balanced.' });
+  }
+
+  if (trimmed.includes('```')) {
+    findings.push({ level: 'error', message: 'Template still contains markdown code fences.' });
+  }
+
+  if (/@model\b|@using\b/.test(trimmed)) {
+    findings.push({ level: 'warn', message: 'The template declares `@model` or `@using`, but your engine already injects the required header.' });
+  }
+
+  if (mode === 'json-epic') {
+    if (!/modelJson|EpicData|@Value|@AllValues|@NullableReferenceProperty/.test(trimmed)) {
+      findings.push({ level: 'warn', message: 'JSON/Epic mode template does not reference `modelJson`, `EpicData`, or the built-in helpers. That may be valid, but it is unusual.' });
+    }
+    if (!/@Raw\(modelJson\.ToString\(\)\)/.test(trimmed) && !/^\s*\{[\s\S]*\}\s*$/.test(trimmed)) {
+      findings.push({ level: 'warn', message: 'JSON/Epic mode usually ends with `@Raw(modelJson.ToString())` or emits a brand-new JSON document.' });
+    }
+  } else if (mode === 'merge') {
+    if (!/@Value\(/.test(trimmed)) {
+      findings.push({ level: 'warn', message: 'General merge mode usually relies on the injected `@Value(model, "path")` helper.' });
+    }
+    if (/modelJson|EpicData|@AllValues|@NullableReferenceProperty/.test(trimmed)) {
+      findings.push({ level: 'warn', message: 'This looks like JSON/Epic helper usage, but the selected mode is General merge.' });
+    }
+  }
+
+  return findings;
+}
+
+function runExternalValidator({ mode, template, inputJson }) {
+  return new Promise((resolve) => {
+    if (!VALIDATOR_COMMAND) {
+      resolve({ available: false, mode, validator: null });
+      return;
+    }
+
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'razorgen-validate-'));
+    const templatePath = path.join(tempDir, 'template.cshtml');
+    const samplePath = path.join(tempDir, 'sample.json');
+    fs.writeFileSync(templatePath, template, 'utf8');
+    fs.writeFileSync(samplePath, inputJson || '{}', 'utf8');
+
+    const command = VALIDATOR_COMMAND
+      .replaceAll('{mode}', mode)
+      .replaceAll('{templatePath}', templatePath)
+      .replaceAll('{samplePath}', samplePath);
+
+    exec(command, { timeout: VALIDATOR_TIMEOUT_MS, windowsHide: true }, (error, stdout, stderr) => {
+      let parsed;
+      try { parsed = JSON.parse((stdout || '').trim()); } catch { parsed = null; }
+
+      try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch {}
+
+      resolve({
+        available: true,
+        mode,
+        validator: command,
+        ok: !error && (!parsed || parsed.ok !== false),
+        stdout: stdout ? stdout.trim() : '',
+        stderr: stderr ? stderr.trim() : '',
+        exitCode: error && typeof error.code === 'number' ? error.code : 0,
+        parsed
+      });
+    });
   });
 }
 
@@ -215,6 +325,19 @@ http.createServer(async (req, res) => {
   }
 
   // API proxy — key injected here, never sent to browser
+  if (url === '/api/config' && req.method === 'GET') {
+    res.writeHead(200, {'Content-Type':'application/json'});
+    res.end(JSON.stringify({
+      apiKeyConfigured: !!API_KEY,
+      serverModel: MODEL,
+      allowedModels: ALLOWED_MODELS,
+      trustProxy: TRUST_PROXY,
+      validatorConfigured: !!VALIDATOR_COMMAND,
+    }));
+    return;
+  }
+
+  // API proxy — key injected here, never sent to browser
   if (url === '/api/messages' && req.method === 'POST') {
     if (!API_KEY) {
       res.writeHead(500, {'Content-Type':'application/json'});
@@ -223,7 +346,11 @@ http.createServer(async (req, res) => {
     }
     const body = await readBody(req);
     let payload;
-    try { payload = JSON.parse(body); payload.model = MODEL; }
+    try {
+      payload = JSON.parse(body);
+      const requestedModel = typeof payload.model === 'string' ? payload.model.trim() : '';
+      payload.model = ALLOWED_MODELS.includes(requestedModel) ? requestedModel : MODEL;
+    }
     catch { payload = body; }
     const outBody = typeof payload === 'string' ? payload : JSON.stringify(payload);
 
@@ -249,8 +376,38 @@ http.createServer(async (req, res) => {
     return;
   }
 
+  if (url === '/api/validate' && req.method === 'POST') {
+    const payload = await readJsonBody(req, res);
+    if (!payload) return;
+
+    const template = typeof payload.template === 'string' ? payload.template : '';
+    const mode = payload.mode === 'merge' ? 'merge' : 'json-epic';
+    const inputJson = typeof payload.inputJson === 'string' ? payload.inputJson : '';
+    const lint = lintTemplate(template, mode);
+    const external = await runExternalValidator({ mode, template, inputJson });
+
+    let ok = !lint.some(f => f.level === 'error');
+    if (external.available) ok = ok && !!external.ok;
+
+    res.writeHead(200, {'Content-Type':'application/json'});
+    res.end(JSON.stringify({
+      ok,
+      mode,
+      lint,
+      external,
+    }));
+    return;
+  }
+
   // Static files
-  const filePath = path.join(__dirname, url === '/' ? 'index.html' : url);
+  const requestPath = decodeURIComponent(url === '/' ? '/index.html' : url);
+  const relativePath = requestPath.replace(/^\/+/, '');
+  const filePath = path.resolve(__dirname, relativePath);
+  if (!filePath.startsWith(path.resolve(__dirname) + path.sep) && filePath !== path.resolve(__dirname, 'index.html')) {
+    res.writeHead(403, {'Content-Type':'text/plain'});
+    res.end('403 Forbidden');
+    return;
+  }
   fs.readFile(filePath, (err, data) => {
     if (err) {
       fs.readFile(path.join(__dirname, 'index.html'), (e, d) => {

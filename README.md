@@ -117,13 +117,24 @@ Copy `.env.example` to `.env` and fill in:
 | Variable | Required | Description |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | Yes | Your key from console.anthropic.com |
-| `ANTHROPIC_MODEL` | No | Defaults to `claude-sonnet-4-20250514` |
+| `ANTHROPIC_MODEL` | No | Server default model, defaults to `claude-sonnet-4-20250514` |
+| `ANTHROPIC_ALLOWED_MODELS` | No | Comma-separated allowlist for browser-selected model overrides |
 | `PORT` | No | Defaults to `43000` |
 | `USERS` | Yes | `name:password,name2:password2` |
 | `ALLOWED_IPS` | No | Comma-separated IPs, blank = allow all |
+| `TRUST_PROXY` | No | `true` only when behind a trusted reverse proxy that sets `X-Forwarded-For` |
+| `RAZOR_VALIDATE_COMMAND` | No | Optional external validator command for true RazorEngine compile validation |
+| `RAZOR_VALIDATE_TIMEOUT_MS` | No | Timeout for the external validator command |
 
 **The `.env` file is never committed to git and never baked into the Docker image.**
 It is mounted into the container at runtime via `docker-compose.yml`.
+
+The app now keeps the Anthropic API key on the server only. The browser Settings page shows server status and can save a preferred model override, but the server validates that override against `ANTHROPIC_ALLOWED_MODELS`.
+
+RazorGen also includes a Validate action:
+- Built-in lint always runs on the server
+- Full compile validation is optional and can be enabled by setting `RAZOR_VALIDATE_COMMAND`
+- A stub validator project lives in [`validator/README.md`](/f:/code_projects/razorgen/validator/README.md)
 
 ---
 
@@ -183,3 +194,16 @@ razorgen.yourdomain.com {
 | `docker-compose.yml` | Easy local + production runner |
 | `.github/workflows/docker-publish.yml` | Auto-publish to Docker Hub on push |
 | `.gitignore` | Keeps `.env` out of git |
+
+---
+
+## How RazorGen Helps
+
+RazorGen is primarily a transform drafting tool:
+- Paste representative input JSON
+- Describe the transform in plain English
+- Pick the engine mode that matches your runtime
+- Use presets/examples to steer the generation
+- Review the generated transform plus the built-in auto-checks/explanation
+
+The goal is a strong first-pass transform that matches your Equus Razor patterns, even when full compile validation is not available on the machine running RazorGen.

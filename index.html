@@ -122,6 +122,32 @@
     }
     .panel-title { font-size: 11px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1px; }
     .panel-hint  { font-size: 11px; color: var(--faint); }
+    .panel-tools {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+      padding: 10px 13px; border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.01);
+    }
+    .panel-brief {
+      display: flex; flex-direction: column; gap: 10px;
+      padding: 10px 13px; border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.015);
+    }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .brief-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .brief-pill {
+      padding: 5px 9px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--muted); font-size: 11px; cursor: pointer;
+      transition: all 0.13s;
+    }
+    .brief-pill:hover { border-color: var(--accent); color: var(--accent-h); }
+    .brief-pill.active { background: var(--accent-dim); border-color: rgba(99,102,241,0.35); color: var(--accent-h); }
+    .tool-field { display: flex; flex-direction: column; gap: 4px; }
+    .tool-field label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .tool-field select {
+      padding: 7px 9px; font-family: var(--mono); font-size: 12px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 7px; color: var(--text); outline: none;
+    }
 
     textarea {
       flex: 1; width: 100%; padding: 11px 13px;
@@ -152,6 +178,22 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     #status-msg { color: var(--muted); }
     #err-msg    { color: var(--danger); }
+    .validation-box {
+      margin-top: 10px; padding: 10px 12px; border-radius: 8px;
+      border: 1px solid var(--border); background: rgba(12,24,41,0.85);
+      font-size: 12px; line-height: 1.55; color: var(--muted); display: none; white-space: pre-wrap;
+    }
+    .validation-box.show { display: block; }
+    .validation-box.ok { border-color: rgba(16,185,129,0.3); color: #a7f3d0; }
+    .validation-box.warn { border-color: rgba(245,158,11,0.3); color: #fde68a; }
+    .validation-box.bad { border-color: rgba(239,68,68,0.3); color: #fca5a5; }
+    .validation-box code { color: inherit; }
+    .explain-box {
+      margin-top: 10px; padding: 10px 12px; border-radius: 8px;
+      border: 1px solid var(--border); background: rgba(30,41,59,0.75);
+      font-size: 12px; line-height: 1.6; color: var(--muted); display: none; white-space: pre-wrap;
+    }
+    .explain-box.show { display: block; }
 
     /* ── Settings page ── */
     #page-settings { display: none; flex: 1; overflow-y: auto; padding: 24px; }
@@ -285,6 +327,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
           Form Builder
         </button>
+        <button class="nav-btn" id="nav-settings" onclick="showPage('settings')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Settings
+        </button>
       </div>
       <div class="nav-group">
         <div class="nav-group-label">Quick Insert</div>
@@ -369,13 +415,13 @@
         <div class="topbar-title" id="page-title">Build Transform</div>
         <div class="topbar-sub" id="page-sub">Paste input JSON and describe what the transform should do</div>
       </div>
-      <div id="api-badge" class="api-badge bad" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid;color:var(--warn);border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.08);">No API key</div>
+      <div id="api-badge" class="api-badge bad" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid;color:var(--warn);border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.08);">Checking server…</div>
     </div>
 
     <!-- warning banner -->
     <div class="banner" id="banner">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      No API key — add one in Settings before generating.
+      Server API key is not configured — update the server `.env` before generating.
       <button class="banner-go" onclick="showPage('settings')">Open Settings</button>
     </div>
 
@@ -398,6 +444,31 @@
             <div class="panel-head">
               <div class="panel-title">What should it do?</div>
               <div class="panel-hint">Plain English, JSON, or both — use Quick Insert shortcuts in the sidebar</div>
+            </div>
+            <div class="panel-tools">
+              <div class="tool-field">
+                <label>Engine mode</label>
+                <select id="engine-mode" onchange="onModeChange()">
+                  <option value="json-epic">JSON / Epic builder</option>
+                  <option value="merge">General merge builder</option>
+                </select>
+              </div>
+              <div class="tool-field">
+                <label>Examples</label>
+                <select id="example-picker" onchange="applyExample(this.value)">
+                  <option value="">Choose an example…</option>
+                </select>
+              </div>
+            </div>
+            <div class="panel-brief">
+              <div>
+                <div class="brief-label">Preset</div>
+                <div class="pill-row" id="preset-row"></div>
+              </div>
+              <div>
+                <div class="brief-label">Constraints</div>
+                <div class="pill-row" id="constraint-row"></div>
+              </div>
             </div>
             <textarea id="desc-box" placeholder="Examples:
 
@@ -426,6 +497,7 @@
 
         <div class="actions">
           <button class="btn btn-primary" id="btn-gen" onclick="generate()" disabled>Generate transform</button>
+          <button class="btn btn-ghost" id="btn-validate" onclick="validateCurrent()">Validate</button>
           <button class="btn btn-ghost" id="btn-copy" onclick="copyResult()" disabled>Copy</button>
           <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
           <div class="status">
@@ -434,6 +506,8 @@
             <span id="err-msg"></span>
           </div>
         </div>
+        <div id="validation-box" class="validation-box"></div>
+        <div id="explain-box" class="explain-box"></div>
       </div>
     </div>
 
@@ -483,27 +557,52 @@
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:460px;">
         <h2 style="font-size:15px;font-weight:700;margin-bottom:20px;">Settings</h2>
         <div style="margin-bottom:16px;">
-          <label style="display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Anthropic API Key</label>
-          <input type="password" id="cfg-key" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false"
+          <label style="display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Server API key</label>
+          <div id="cfg-key-status"
             style="width:100%;padding:8px 10px;font-family:var(--mono);font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);outline:none;">
+            Checking server…
+          </div>
           <div style="font-size:11px;color:var(--faint);margin-top:4px;line-height:1.5;">
-            Stored in your browser's localStorage only — sent directly to <code>api.anthropic.com</code>, nowhere else.<br>
-            Get a key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--muted);">console.anthropic.com</a>
+            RazorGen keeps the Anthropic key on the server. Set <code>ANTHROPIC_API_KEY</code> in the server <code>.env</code>; it is never stored in this browser.
+          </div>
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Server default model</label>
+          <div id="cfg-server-model"
+            style="width:100%;padding:8px 10px;font-family:var(--mono);font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);outline:none;">
+            Checking server…
+          </div>
+          <div style="font-size:11px;color:var(--faint);margin-top:4px;line-height:1.5;">
+            This comes from <code>ANTHROPIC_MODEL</code> on the server.
+          </div>
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Validation backend</label>
+          <div id="cfg-validator-status"
+            style="width:100%;padding:8px 10px;font-family:var(--mono);font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);outline:none;">
+            Checking server…
+          </div>
+          <div style="font-size:11px;color:var(--faint);margin-top:4px;line-height:1.5;">
+            Lint runs inside RazorGen. Full compile validation appears here when <code>RAZOR_VALIDATE_COMMAND</code> is configured on the server.
           </div>
         </div>
         <div style="margin-bottom:20px;">
           <label style="display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Model</label>
           <select id="cfg-model"
             style="width:100%;padding:8px 10px;font-family:var(--mono);font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);outline:none;">
+            <option value="">Use server default</option>
             <option value="claude-sonnet-4-20250514">Claude Sonnet 4 — recommended</option>
             <option value="claude-opus-4-5">Claude Opus 4.5 — slower, highest quality</option>
             <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 — fastest</option>
           </select>
+          <div style="font-size:11px;color:var(--faint);margin-top:4px;line-height:1.5;">
+            Saved in this browser as your preferred override. The server validates the model before forwarding the request.
+          </div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
           <button onclick="saveSettings()"
             style="padding:8px 18px;background:var(--accent);border:none;border-radius:7px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">
-            Save settings
+            Save preference
           </button>
           <span id="smsg" style="font-size:12px;color:var(--success);opacity:0;transition:opacity .3s;">Saved ✓</span>
         </div>
@@ -597,14 +696,116 @@ Examples:
 @Raw(modelJson["data"].First(...)["values"]["FIELD"].ToString())`
 };
 
-const SYSTEM_PROMPT = `You are an expert at writing data transform files for the Equus relocation platform. These run inside RazorEngine (.NET) against a Newtonsoft JObject model. Follow exact patterns — do not invent new syntax.
+let APP_CONFIG = null;
+let selectedPreset = 'none';
+let selectedConstraints = new Set(['helpers', 'guard']);
+const MODEL_LABELS = {
+  'claude-sonnet-4-20250514': 'Claude Sonnet 4 — recommended',
+  'claude-opus-4-5': 'Claude Opus 4.5 — slower, highest quality',
+  'claude-haiku-4-5-20251001': 'Claude Haiku 4.5 — fastest',
+};
+const MODE_LABELS = {
+  'json-epic': 'JSON / Epic builder',
+  'merge': 'General merge builder',
+};
+const PRESETS = [
+  { id: 'none', label: 'No preset', modes: ['json-epic', 'merge'], text: '' },
+  { id: 'remap', label: 'Value remap', modes: ['json-epic'], text: 'Focus on a pass-through transform that remaps one or more field values using explicit switch/case logic. Keep everything else unchanged.' },
+  { id: 'rename', label: 'Rename field', modes: ['json-epic'], text: 'Focus on renaming one or more field keys inside an object’s values block while preserving the underlying values.' },
+  { id: 'new-json', label: 'New JSON output', modes: ['json-epic'], text: 'Prefer a Type 2 output-template transform that produces a brand-new JSON document instead of mutating modelJson in place.' },
+  { id: 'upsert', label: 'Upsert command', modes: ['json-epic'], text: 'Prefer a Type 3 command/unitOfWork output with explicit commandList, values, whereClause, and whereParams when appropriate.' },
+  { id: 'notes', label: 'Build comment', modes: ['json-epic'], text: 'Focus on building a notes/comments string by concatenating labeled fields in a readable stable format.' },
+  { id: 'merge-text', label: 'Text merge', modes: ['merge'], text: 'Generate a plain-text Razor merge template that outputs readable lines and labels using the injected Value helper.' },
+  { id: 'merge-json', label: 'JSON merge', modes: ['merge'], text: 'Generate a merge template whose final output is JSON-like content, using the injected Value helper for each field lookup.' }
+];
+const CONSTRAINTS = [
+  { id: 'helpers', label: 'Prefer helpers', text: 'Prefer built-in helpers like @Value, @AllValues, and @NullableReferenceProperty when they fit the request.' },
+  { id: 'guard', label: 'Guard nulls', text: 'Be conservative with null/empty checks before reading fields or mutating objects.' },
+  { id: 'minimal', label: 'Keep minimal', text: 'Generate the smallest straightforward transform that satisfies the request. Avoid extra comments or optional logic.' },
+  { id: 'commented', label: 'Add comments', text: 'Add short Razor comments only where the mapping logic would otherwise be hard to follow.' },
+  { id: 'passthrough', label: 'Force pass-through', text: 'Use a Type 1 pass-through transform that mutates modelJson and ends with @Raw(modelJson.ToString()).' },
+  { id: 'typed-output', label: 'Force new output', text: 'Use a Type 2 output-template transform that emits a brand-new JSON structure.' }
+];
+const EXAMPLES = [
+  {
+    id: 'epic-pass-through',
+    mode: 'json-epic',
+    label: 'Epic: pass-through remap',
+    inputJson: `{"data":[{"name":"ASSIGNMENT","values":{"START_DATE":"2026-01-01","ACTUAL_END_DATE":"","CURRENT_EXTENSION_END_DATE":"2026-08-31","COMMENTS":null}},{"name":"DOCUMENT","values":{"DOCUMENT_TYPE_ID":"Passport"}}]}`,
+    desc: `If ASSIGNMENT.START_DATE is not empty, copy it to ASSIGNMENT.EFFECTIVE_DATE.
+If ASSIGNMENT.ACTUAL_END_DATE is not empty use it for ASSIGNMENT.SCHEDULED_END_DATE, otherwise fall back to ASSIGNMENT.CURRENT_EXTENSION_END_DATE.
+For DOCUMENT rows, remap DOCUMENT_TYPE_ID "Passport" to "Passport / Visa".`
+  },
+  {
+    id: 'epic-output-template',
+    mode: 'json-epic',
+    label: 'Epic: new JSON output',
+    inputJson: `{"data":[{"name":"EMPLOYEE","values":{"SYSTEM_NUMBER":"1001","FIRST_NAME":"Jane"}},{"name":"ASSIGNMENT","values":{"ID":"A-77","START_DATE":"2026-04-01","FROM_COUNTRY":"USA","TO_COUNTRY":"CAN"}}]}`,
+    desc: `Produce a new JSON output object with:
+- employeeId from EMPLOYEE.SYSTEM_NUMBER
+- firstName from EMPLOYEE.FIRST_NAME
+- assignmentId from ASSIGNMENT.ID
+- startDate formatted yyyy-MM-dd, null if empty
+- homeCountry from ASSIGNMENT.FROM_COUNTRY
+- hostCountry from ASSIGNMENT.TO_COUNTRY`
+  },
+  {
+    id: 'merge-basic',
+    mode: 'merge',
+    label: 'Merge: simple property template',
+    inputJson: `{"Employee":{"FirstName":"Jane","LastName":"Miller"},"Assignment":{"Id":"A-77","HostCountry":"Canada"}}`,
+    desc: `Write a merge template for the general merge builder.
+Use the injected Value(model, propertyPath) helper and output:
+Employee: FirstName LastName
+Assignment: Id
+Host Country: HostCountry`
+  },
+  {
+    id: 'epic-create-object',
+    mode: 'json-epic',
+    label: 'Epic: create object from source fields',
+    inputJson: `{"data":[{"name":"ASSIGNMENT","values":{"TO_CITY":"Toronto","TO_COUNTRY":"Canada","ID":"A-77"}}]}`,
+    desc: `Create a new ASSIGNMENT_MAILING_ADDRESS object and add it to the data array.
+Set CITY from ASSIGNMENT.TO_CITY.
+Set COUNTRY from ASSIGNMENT.TO_COUNTRY.
+Set ADDRESS_TYPE to "Destination".`
+  },
+  {
+    id: 'epic-doc-remap',
+    mode: 'json-epic',
+    label: 'Epic: document cleanup',
+    inputJson: `{"data":[{"name":"DOCUMENT","values":{"DOCUMENT_TYPE_ID":"National ID","FILE_NAME":"PASSPORT.PDF"}},{"name":"DOCUMENT","values":{"DOCUMENT_TYPE_ID":"Other","FILE_NAME":"Photo.JPG"}}]}`,
+    desc: `For each DOCUMENT row, remap DOCUMENT_TYPE_ID values:
+- "National ID" to "Identity document"
+- anything else to "Misc documents"
+Also convert common uppercase file extensions to lowercase in FILE_NAME.`
+  },
+  {
+    id: 'merge-letter',
+    mode: 'merge',
+    label: 'Merge: simple letter',
+    inputJson: `{"Employee":{"FullName":"Jane Miller"},"Assignment":{"HostCountry":"Canada","StartDate":"2026-04-01"}}`,
+    desc: `Write a short letter-style merge template:
+Hello Employee.FullName,
+Your assignment to Assignment.HostCountry starts on Assignment.StartDate.`
+  }
+];
+
+const JSON_EPIC_SYSTEM_PROMPT = `You are an expert at writing data transform files for the Equus relocation platform. These run inside RazorEngine (.NET) and the template is prepended with a header before compilation. Follow exact patterns — do not invent new syntax.
 
 ## WHAT IS ALWAYS AVAILABLE (pre-injected by engine, no @using needed)
 
 Namespaces automatically in scope — never add @using for these:
   System.Dynamic, Newtonsoft.Json, Newtonsoft.Json.Linq, System.Text, System.Linq
 
-modelJson — a Newtonsoft JObject parsed from the input. Always the root object.
+The engine prepends a header that does all of the following before your template runs:
+  - Parses Model into: var modelJson = JObject.Parse(JsonConvert.SerializeObject(Model));
+  - Defines EpicBlock with TableName and Values
+  - Populates ViewBag.EpicData and EpicData from Model["data"] when present
+  - Falls back to a single EpicBlock when the payload is not wrapped in { "data": [...] }
+
+modelJson — a Newtonsoft JObject parsed from Model. Always available in the template body.
+EpicData — List<EpicBlock> exposed via ViewBag and assigned to a local variable in the header.
 
 Built-in helper functions (defined in the engine header, always callable):
 
@@ -634,7 +835,11 @@ EpicBlock class — available when looping over data blocks:
   block.TableName  (string)
   block.Values     (IDictionary<string, object>)
 
-EpicData — List<EpicBlock> populated from modelJson["data"], accessible in templates.
+Important helper behavior from the real builder:
+  - Value(...) outputs a quoted JSON string or raw null
+  - AllValues(...) emits JSON fragments like {"name":"FIELD","value":"VALUE"}, and includes a trailing comma
+  - NullableReferenceProperty(...) emits either "propName": null or a nested EQ_LookupInfo object
+  - Templates are compiled against IDictionary<string, object>, not a custom @model declaration
 
 ## FILE STRUCTURE — pick the right type
 
@@ -786,7 +991,54 @@ TYPE 3 — Command/upsert (database operations):
 - Do NOT add @model declarations
 - Do NOT use async/await, class definitions beyond what the engine provides, or complex generics
 - Do NOT wrap output in HTML
+- Prefer patterns that work cleanly with RazorEngine helpers and JObject/JArray mutation
 - Output ONLY the raw .cs file — no markdown fences, no explanation before or after`;
+
+const MERGE_SYSTEM_PROMPT = `You are an expert at writing RazorEngine merge templates for the Equus relocation platform.
+
+## RUNTIME SHAPE
+
+The general merge builder prepends this header before the user template:
+  @using Core.Utilities;
+  @helper Value(object model, string propertyPath){@RazorHelper.Value(model,propertyPath)}
+
+The template is then compiled with the root object as Model.
+
+## WHAT TO WRITE
+
+- Write only the body template the user needs; do not repeat the injected header
+- Use \`@Value(Model, "Path.To.Property")\` or \`@Value(someObject, "Path")\` to resolve values safely
+- Write plain text / JSON / XML exactly as requested
+- Do not add markdown fences or explanations
+- Do not add @using or @model declarations
+- Keep syntax compatible with classic RazorEngine
+
+## EXAMPLES
+
+Simple text:
+  Employee: @Value(Model, "Employee.FirstName") @Value(Model, "Employee.LastName")
+
+JSON fragment:
+  {
+    "assignmentId": @Value(Model, "Assignment.Id"),
+    "hostCountry": @Value(Model, "Assignment.HostCountry")
+  }
+
+Conditional block:
+  @if (@Value(Model, "Assignment.Id") != null) {
+    <text>Assignment ID: @Value(Model, "Assignment.Id")</text>
+  }
+
+Output ONLY the raw template contents.`;
+
+const OUTPUT_DISCIPLINE = `## OUTPUT DISCIPLINE
+
+- Return a single finished transform only
+- Do not include markdown fences
+- Do not explain the answer inline
+- Prefer stable explicit patterns over clever compact code
+- If the request sounds like a pass-through mutation, end with the correct final output expression
+- If field names or object names are given, preserve them exactly`;
 
 function chip(key) {
   showPage('build');
@@ -794,6 +1046,102 @@ function chip(key) {
   const cur = box.value.trim();
   box.value = cur ? cur + '\n\n' + CHIPS[key] : CHIPS[key];
   box.focus(); checkReady();
+}
+
+function currentMode() {
+  return document.getElementById('engine-mode').value || 'json-epic';
+}
+
+function currentSystemPrompt() {
+  return `${currentMode() === 'merge' ? MERGE_SYSTEM_PROMPT : JSON_EPIC_SYSTEM_PROMPT}\n\n${OUTPUT_DISCIPLINE}`;
+}
+
+function exampleContext(mode) {
+  const relevant = EXAMPLES.filter(example => example.mode === mode).slice(0, 3);
+  if (!relevant.length) return '';
+  return relevant.map((example, idx) =>
+    `EXAMPLE ${idx + 1} — ${example.label}\nINPUT SAMPLE:\n${example.inputJson}\nREQUEST:\n${example.desc}`
+  ).join('\n\n');
+}
+
+function renderPresetPills() {
+  const row = document.getElementById('preset-row');
+  const mode = currentMode();
+  row.innerHTML = '';
+  PRESETS.filter(preset => preset.modes.includes(mode)).forEach(preset => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `brief-pill${selectedPreset === preset.id ? ' active' : ''}`;
+    btn.textContent = preset.label;
+    btn.onclick = () => {
+      selectedPreset = preset.id;
+      renderPresetPills();
+      clearValidation();
+    };
+    row.appendChild(btn);
+  });
+  if (!PRESETS.some(preset => preset.id === selectedPreset && preset.modes.includes(mode))) {
+    selectedPreset = 'none';
+    renderPresetPills();
+  }
+}
+
+function renderConstraintPills() {
+  const row = document.getElementById('constraint-row');
+  row.innerHTML = '';
+  CONSTRAINTS.forEach(constraint => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `brief-pill${selectedConstraints.has(constraint.id) ? ' active' : ''}`;
+    btn.textContent = constraint.label;
+    btn.onclick = () => {
+      if (selectedConstraints.has(constraint.id)) selectedConstraints.delete(constraint.id);
+      else selectedConstraints.add(constraint.id);
+      renderConstraintPills();
+      clearValidation();
+    };
+    row.appendChild(btn);
+  });
+}
+
+function selectedPresetText() {
+  return (PRESETS.find(preset => preset.id === selectedPreset) || { text: '' }).text;
+}
+
+function selectedConstraintText() {
+  return CONSTRAINTS.filter(item => selectedConstraints.has(item.id)).map(item => `- ${item.text}`).join('\n');
+}
+
+function renderExamples() {
+  const picker = document.getElementById('example-picker');
+  if (!picker) return;
+  const mode = currentMode();
+  const options = ['<option value="">Choose an example…</option>'];
+  EXAMPLES.filter(example => example.mode === mode).forEach(example => {
+    options.push(`<option value="${example.id}">${example.label}</option>`);
+  });
+  picker.innerHTML = options.join('');
+}
+
+function applyExample(id) {
+  const example = EXAMPLES.find(item => item.id === id);
+  if (!example) return;
+  document.getElementById('engine-mode').value = example.mode;
+  document.getElementById('input-box').value = example.inputJson;
+  document.getElementById('desc-box').value = example.desc;
+  clearValidation();
+  renderExamples();
+  renderPresetPills();
+  renderConstraintPills();
+  document.getElementById('example-picker').value = example.id;
+  checkReady();
+}
+
+function onModeChange() {
+  renderExamples();
+  renderPresetPills();
+  document.getElementById('example-picker').value = '';
+  clearValidation();
 }
 
 function showPage(p) {
@@ -806,40 +1154,85 @@ function showPage(p) {
   const titles = {
     build:    ['AI Transform',  'Paste input JSON and describe what the transform should do'],
     builder:  ['Form Builder',  'Add operations — code generates instantly, no AI needed'],
-    settings: ['Settings',      'Configure your API key and model']
+    settings: ['Settings',      'View server status and save your model preference']
   };
   document.getElementById('page-title').textContent = titles[p][0];
   document.getElementById('page-sub').textContent   = titles[p][1];
   if (p==='settings') {
-    document.getElementById('cfg-key').value   = localStorage.getItem('rtg_key')   || '';
-    document.getElementById('cfg-model').value = localStorage.getItem('rtg_model') || 'claude-sonnet-4-20250514';
+    document.getElementById('cfg-model').value = localStorage.getItem('rtg_model') || '';
+    renderConfig();
   }
 }
 
 function saveSettings() {
-  const key   = document.getElementById('cfg-key').value.trim();
   const model = document.getElementById('cfg-model').value;
-  key ? localStorage.setItem('rtg_key', key) : localStorage.removeItem('rtg_key');
-  localStorage.setItem('rtg_model', model);
+  model ? localStorage.setItem('rtg_model', model) : localStorage.removeItem('rtg_model');
   const m = document.getElementById('smsg');
   m.classList.add('show');
-  setTimeout(() => { m.classList.remove('show'); updateStatus(); }, 1500);
-  updateStatus();
+  setTimeout(() => { m.classList.remove('show'); renderConfig(); }, 1500);
+  renderConfig();
 }
 
-function updateStatus() {
-  const key   = localStorage.getItem('rtg_key');
+function renderConfig() {
   const badge = document.getElementById('api-badge');
   const banner = document.getElementById('banner');
-  if (key) {
-    badge.textContent = 'API key set ✓';
+  const keyStatus = document.getElementById('cfg-key-status');
+  const serverModel = document.getElementById('cfg-server-model');
+  const validatorStatus = document.getElementById('cfg-validator-status');
+  const modelOverride = localStorage.getItem('rtg_model') || '';
+  const modelSelect = document.getElementById('cfg-model');
+
+  if (!APP_CONFIG) {
+    badge.textContent = 'Checking server…';
+    badge.className   = 'api-badge bad';
+    banner.classList.remove('show');
+    if (keyStatus) keyStatus.textContent = 'Checking server…';
+    if (serverModel) serverModel.textContent = 'Checking server…';
+    if (validatorStatus) validatorStatus.textContent = 'Checking server…';
+    return;
+  }
+
+  if (APP_CONFIG.apiKeyConfigured) {
+    badge.textContent = 'Server ready ✓';
     badge.className   = 'api-badge ok';
     banner.classList.remove('show');
   } else {
-    badge.textContent = 'No API key';
+    badge.textContent = 'Server key missing';
     badge.className   = 'api-badge bad';
     banner.classList.add('show');
   }
+
+  if (keyStatus) keyStatus.textContent = APP_CONFIG.apiKeyConfigured ? 'Configured on server' : 'Missing from server .env';
+  if (serverModel) serverModel.textContent = APP_CONFIG.serverModel || '(not set)';
+  if (validatorStatus) validatorStatus.textContent = APP_CONFIG.validatorConfigured ? 'External validator configured' : 'Lint only';
+  if (modelSelect) {
+    const options = ['<option value="">Use server default</option>'];
+    const allowed = APP_CONFIG.allowedModels && APP_CONFIG.allowedModels.length
+      ? APP_CONFIG.allowedModels
+      : Object.keys(MODEL_LABELS);
+    allowed.forEach(model => {
+      const label = MODEL_LABELS[model] || model;
+      options.push(`<option value="${model}">${label}</option>`);
+    });
+    modelSelect.innerHTML = options.join('');
+    modelSelect.value = allowed.includes(modelOverride) ? modelOverride : '';
+  }
+}
+
+async function loadConfig() {
+  try {
+    const res = await fetch('/api/config');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    APP_CONFIG = await res.json();
+  } catch (err) {
+    APP_CONFIG = {
+      apiKeyConfigured: false,
+      serverModel: 'Unavailable',
+      allowedModels: [],
+      loadError: err.message
+    };
+  }
+  renderConfig();
 }
 
 function checkReady() {
@@ -858,11 +1251,99 @@ function setError(msg) {
   document.getElementById('status-msg').textContent = '';
 }
 
+function clearValidation() {
+  const box = document.getElementById('validation-box');
+  box.textContent = '';
+  box.className = 'validation-box';
+  const explain = document.getElementById('explain-box');
+  explain.textContent = '';
+  explain.className = 'explain-box';
+}
+
+function showValidation(message, tone) {
+  const box = document.getElementById('validation-box');
+  box.textContent = message;
+  box.className = `validation-box show ${tone}`;
+}
+
+function showExplanation(message) {
+  const box = document.getElementById('explain-box');
+  box.textContent = message;
+  box.className = 'explain-box show';
+}
+
+function postProcessOutput(raw, mode) {
+  let clean = (raw || '').trim();
+  clean = clean.replace(/^```[^\n]*\n?/, '').replace(/\n?```$/, '').trim();
+  clean = clean.replace(/\r\n/g, '\n');
+  if (mode === 'json-epic' && clean.includes('@Raw(modelJson.ToString())') && !clean.startsWith('@{')) {
+    const bodyIndex = clean.indexOf('@{');
+    if (bodyIndex > 0) clean = clean.slice(bodyIndex);
+  }
+  return clean;
+}
+
+function qualityFindings(template, mode) {
+  const findings = [];
+  if (!template) return findings;
+  if (template.includes('```')) findings.push({ level: 'error', message: 'Output still contains markdown fences.' });
+  if (/@model\b|@using\b/.test(template)) findings.push({ level: 'warn', message: 'Generated template includes @model/@using even though your runtime injects its own header.' });
+  if (mode === 'json-epic') {
+    if (template.includes('class ') && !template.includes('public class EpicBlock')) findings.push({ level: 'warn', message: 'Generated a custom class, which usually is not needed in this Razor runtime.' });
+    if (!/@Raw\(modelJson\.ToString\(\)\)/.test(template) && !/^\s*\{[\s\S]*\}\s*$/.test(template)) findings.push({ level: 'warn', message: 'Result does not clearly look like pass-through output or a fresh JSON output template.' });
+    if (/console\.log|await |async /.test(template)) findings.push({ level: 'error', message: 'Template contains JavaScript/async constructs that will not work in RazorEngine.' });
+  } else {
+    if (/modelJson|EpicData|@AllValues|@NullableReferenceProperty/.test(template)) findings.push({ level: 'warn', message: 'Template references JSON/Epic helpers while General merge mode is selected.' });
+    if (!/@Value\(/.test(template)) findings.push({ level: 'warn', message: 'General merge output does not use the injected Value helper.' });
+  }
+  return findings;
+}
+
+function runQualityChecks(template, mode) {
+  const findings = qualityFindings(template, mode);
+  if (!findings.length) {
+    showValidation('Auto-checks: no obvious generation issues found.', 'ok');
+    return;
+  }
+  const tone = findings.some(item => item.level === 'error') ? 'bad' : 'warn';
+  const lines = ['Auto-checks:'];
+  findings.forEach(item => lines.push(`${item.level.toUpperCase()}: ${item.message}`));
+  showValidation(lines.join('\n'), tone);
+}
+
+function explainTransform(template, mode) {
+  const parts = [];
+  parts.push(`Mode: ${MODE_LABELS[mode]}.`);
+
+  if (mode === 'json-epic') {
+    if (/@Raw\(modelJson\.ToString\(\)\)/.test(template)) parts.push('This looks like a pass-through transform that mutates modelJson and then outputs the updated payload.');
+    else parts.push('This looks like a fresh output template or command payload rather than an in-place mutation.');
+
+    if (/switch\s*\(/.test(template)) parts.push('It uses explicit switch/case logic for at least one remap.');
+    if (/new JObject\(\)/.test(template) || /\.Add\(/.test(template)) parts.push('It creates or appends JSON objects/arrays as part of the transform.');
+    if (/COMMENTS|NOTES/.test(template)) parts.push('It appears to build a composed notes/comment field from multiple values.');
+    if (/@Value\(|@AllValues\(|@NullableReferenceProperty\(/.test(template)) parts.push('It relies on your injected Epic helper methods instead of only raw JObject access.');
+  } else {
+    parts.push('This is written for the general merge builder and should rely on the injected Value helper to read properties from Model.');
+    if (/@Value\(/.test(template)) parts.push('It uses Value lookups for data access.');
+    if (/^\s*\{[\s\S]*\}\s*$/.test(template)) parts.push('The output format appears to be JSON-shaped text.');
+    else parts.push('The output format appears to be plain text / document-style content.');
+  }
+
+  const findings = qualityFindings(template, mode);
+  if (findings.length) parts.push(`Watch-outs: ${findings.map(item => item.message).join(' ')}`);
+  else parts.push('Auto-checks did not spot any common formatting mistakes.');
+
+  return parts.join('\n\n');
+}
+
 function clearAll() {
   ['input-box','desc-box'].forEach(id => document.getElementById(id).value = '');
   const r = document.getElementById('result-box');
   r.value = ''; r.classList.remove('ready');
   document.getElementById('btn-copy').disabled = true;
+  document.getElementById('example-picker').value = '';
+  clearValidation();
   setStatus('', false); checkReady();
 }
 
@@ -873,8 +1354,18 @@ async function generate() {
 
   const inputJson = document.getElementById('input-box').value.trim();
   const desc      = document.getElementById('desc-box').value.trim();
+  const preferredModel = localStorage.getItem('rtg_model') || '';
+  const mode = currentMode();
+  const presetText = selectedPresetText();
+  const constraintText = selectedConstraintText();
+  const examplesText = exampleContext(mode);
+  clearValidation();
 
   const userMsg =
+    `ENGINE MODE:\n${MODE_LABELS[mode]}\n\n` +
+    (presetText ? `TASK PRESET:\n${presetText}\n\n` : '') +
+    (constraintText ? `CONSTRAINTS:\n${constraintText}\n\n` : '') +
+    (examplesText ? `REFERENCE PATTERNS:\n${examplesText}\n\n` : '') +
     (inputJson ? `INPUT JSON:\n\`\`\`\n${inputJson.slice(0,6000)}\n\`\`\`\n\n` : '') +
     `WHAT THE TRANSFORM SHOULD DO:\n${desc.slice(0,4000)}\n\n` +
     `Write the complete .cs Razor transform file. Choose the correct transform type. Follow all syntax rules exactly.`;
@@ -883,22 +1374,81 @@ async function generate() {
     const res = await fetch('/api/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ max_tokens: 4000, system: SYSTEM_PROMPT,
+      body: JSON.stringify({ model: preferredModel || undefined, max_tokens: 4000, system: currentSystemPrompt(),
         messages: [{ role: 'user', content: userMsg }] })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error?.message || `HTTP ${res.status}`);
     const raw   = data.content.map(b => b.text||'').join('').trim();
-    const clean = raw.replace(/^```[^\n]*\n?/,'').replace(/\n?```$/,'').trim();
+    const clean = postProcessOutput(raw, mode);
     const out = document.getElementById('result-box');
     out.value = clean; out.classList.add('ready');
     document.getElementById('btn-copy').disabled = false;
+    runQualityChecks(clean, mode);
+    showExplanation(explainTransform(clean, mode));
     setStatus('Done ✓', false);
     setTimeout(() => setStatus('',false), 3000);
   } catch(err) {
     setError('Error: ' + err.message);
   } finally {
     checkReady();
+  }
+}
+
+async function validateCurrent() {
+  const template = document.getElementById('result-box').value.trim();
+  if (!template) {
+    showValidation('Generate or paste a transform into the result box before validating.', 'warn');
+    return;
+  }
+
+  setError('');
+  setStatus('Validating…', true);
+  clearValidation();
+
+  try {
+    const res = await fetch('/api/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: currentMode(),
+        template,
+        inputJson: document.getElementById('input-box').value.trim()
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || `HTTP ${res.status}`);
+
+    const lines = [];
+    if (data.ok) lines.push('Validation passed.');
+    else lines.push('Validation found issues.');
+
+    if (data.lint && data.lint.length) {
+      data.lint.forEach(item => lines.push(`${item.level.toUpperCase()}: ${item.message}`));
+    } else {
+      lines.push('Lint: no immediate template issues found.');
+    }
+
+    if (data.external && data.external.available) {
+      lines.push(data.external.ok ? 'External validator: passed.' : 'External validator: failed.');
+      if (data.external.parsed && Array.isArray(data.external.parsed.messages)) {
+        data.external.parsed.messages.forEach(msg => lines.push(`VALIDATOR: ${msg}`));
+      } else {
+        if (data.external.stdout) lines.push(`STDOUT: ${data.external.stdout}`);
+        if (data.external.stderr) lines.push(`STDERR: ${data.external.stderr}`);
+      }
+    } else {
+      lines.push('External validator: not configured on the server.');
+    }
+
+    showValidation(lines.join('\n'), data.ok ? 'ok' : (data.lint.some(item => item.level === 'error') ? 'bad' : 'warn'));
+    setStatus(data.ok ? 'Validated ✓' : 'Validation finished', false);
+    setTimeout(() => setStatus('', false), 3000);
+  } catch (err) {
+    showValidation(`Validation failed: ${err.message}`, 'bad');
+    setError('Error: ' + err.message);
+  } finally {
+    document.getElementById('spinner').classList.remove('on');
   }
 }
 
@@ -1261,9 +1811,9 @@ function genDateCopy(op) {
   const d = getOpData(op.id);
   const endField = d.endField || 'SCHEDULED_END_DATE';
   const fallback = d.fallback || 'CURRENT_EXTENSION_END_DATE';
-  let lines = '    var assignment = modelJson["data"].FirstOrDefault(a => a["name"].ToString() == "ASSIGNMENT");
+  let lines = `    var assignment = modelJson["data"].FirstOrDefault(a => a["name"].ToString() == "ASSIGNMENT");
     if (assignment != null)
-    {';
+    {`;
   if (d.startTarget) {
     lines += `
         var startDateStr = assignment["values"]["START_DATE"].ToString();
@@ -1383,7 +1933,7 @@ async function copyBuilder() {
 }
 
 // Init
-checkReady(); showPage('build');
+checkReady(); renderExamples(); showPage('build'); loadConfig();
 </script>
 </body>
 </html>
