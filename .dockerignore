@@ -1,0 +1,15 @@
+# Secrets — never bake into image
+.env
+
+# Windows build artifacts — Docker builds Linux binary from source
+razor-runner-dist/
+razor-runner/bin/
+razor-runner/obj/
+
+# Git
+.git/
+.github/
+
+# Dev files
+*.md
+node_modules/

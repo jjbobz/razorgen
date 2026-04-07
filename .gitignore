@@ -1,8 +1,16 @@
-# Never commit the .env — it has your API key and passwords
+# Secrets
 .env
 
 # Node
 node_modules/
 
-# Docker
-.env
+# .NET build output
+razor-runner/bin/
+razor-runner/obj/
+
+# Pre-built Windows binary (85MB — build locally with: dotnet publish)
+razor-runner-dist/
+
+# OS
+.DS_Store
+Thumbs.db

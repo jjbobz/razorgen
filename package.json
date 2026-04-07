@@ -1,0 +1,13 @@
+{
+  "name": "razorgen",
+  "version": "1.0.0",
+  "description": "AI-assisted Razor/C# transform builder for the Equus relocation platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}

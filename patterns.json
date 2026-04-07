@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Pass-through with field modification",
+    "description": "Modify a single field value on an existing Epic table and pass through all other data unchanged",
+    "inputJson": "{\"data\":[{\"name\":\"EMP\",\"values\":{\"EMP_ID\":\"12345\",\"FIRST_NAME\":\"John\",\"LAST_NAME\":\"Smith\",\"STATUS\":\"A\"}}]}",
+    "transform": "@{\n    var emp = EpicData.FirstOrDefault(b => b.TableName == \"EMP\");\n    if (emp != null) emp.Values[\"STATUS\"] = \"I\";\n    modelJson[\"data\"] = JArray.FromObject(EpicData.Select(b => new { name = b.TableName, values = b.Values }));\n}\n@Raw(modelJson.ToString())"
+  },
+  {
+    "name": "Output new JSON structure from Epic data",
+    "description": "Read fields from an Epic table and produce a new JSON object with renamed/remapped properties",
+    "inputJson": "{\"data\":[{\"name\":\"EMPLOYEE\",\"values\":{\"EMP_ID\":\"E001\",\"FULL_NAME\":\"Jane Doe\",\"DEPT\":\"HR\",\"SALARY\":\"75000\"}}]}",
+    "transform": "{\n  \"employeeId\": @Value(\"EMPLOYEE\", \"EMP_ID\"),\n  \"name\": @Value(\"EMPLOYEE\", \"FULL_NAME\"),\n  \"department\": @Value(\"EMPLOYEE\", \"DEPT\"),\n  \"compensation\": @Value(\"EMPLOYEE\", \"SALARY\")\n}"
+  },
+  {
+    "name": "Upsert / command transform",
+    "description": "Build a command payload that upserts a record using Epic EQ_LookupInfo reference pattern",
+    "inputJson": "{\"data\":[{\"name\":\"RELOCATION\",\"values\":{\"REL_ID\":\"R100\",\"EMPLOYEE_ID\":\"E001\",\"DEST_CITY\":\"Austin\",\"DEST_STATE\":\"TX\",\"MOVE_DATE\":\"2025-06-01\"}}]}",
+    "transform": "{\n  \"commandName\": \"UpsertRelocation\",\n  \"parameters\": {\n    @NullableReferenceProperty(\"RELOCATION\", \"REL_ID\", \"relocationId\", \"Id\"),\n    @NullableReferenceProperty(\"RELOCATION\", \"EMPLOYEE_ID\", \"employee\", \"EmployeeId\"),\n    \"destinationCity\": @Value(\"RELOCATION\", \"DEST_CITY\"),\n    \"destinationState\": @Value(\"RELOCATION\", \"DEST_STATE\"),\n    \"moveDate\": @Value(\"RELOCATION\", \"MOVE_DATE\")\n  }\n}"
+  },
+  {
+    "name": "Iterate multiple table rows (EpicData loop)",
+    "description": "Loop over all EpicData blocks that match a table name prefix and emit an array",
+    "inputJson": "{\"data\":[{\"name\":\"ITEM\",\"values\":{\"ITEM_ID\":\"I1\",\"DESC\":\"Desk\",\"QTY\":\"1\"}},{\"name\":\"ITEM\",\"values\":{\"ITEM_ID\":\"I2\",\"DESC\":\"Chair\",\"QTY\":\"4\"}}]}",
+    "transform": "{\n  \"items\": [\n@foreach (var item in EpicData.Where(b => b.TableName == \"ITEM\")) {\n    {\n      \"id\": @Value(item, \"ITEM_ID\"),\n      \"description\": @Value(item, \"DESC\"),\n      \"quantity\": @Value(item, \"QTY\")\n    },\n}\n  ]\n}"
+  },
+  {
+    "name": "Conditional field inclusion",
+    "description": "Include a field in output only when it has a non-null/non-empty value",
+    "inputJson": "{\"data\":[{\"name\":\"ADDRESS\",\"values\":{\"LINE1\":\"100 Main St\",\"LINE2\":\"\",\"CITY\":\"Chicago\",\"STATE\":\"IL\",\"ZIP\":\"60601\"}}]}",
+    "transform": "@{\n    var addr = EpicData.FirstOrDefault(b => b.TableName == \"ADDRESS\");\n    var line2 = addr?.Values.ContainsKey(\"LINE2\") == true ? addr.Values[\"LINE2\"]?.ToString() : null;\n}\n{\n  \"line1\": @Value(\"ADDRESS\", \"LINE1\"),\n@if (!string.IsNullOrEmpty(line2)) {\n  \"line2\": \"@line2\",\n}\n  \"city\": @Value(\"ADDRESS\", \"CITY\"),\n  \"state\": @Value(\"ADDRESS\", \"STATE\"),\n  \"zip\": @Value(\"ADDRESS\", \"ZIP\")\n}"
+  },
+  {
+    "name": "AllValues pass-through block",
+    "description": "Emit all fields from a table as Epic name/value pair array (useful for generic pass-through or debug)",
+    "inputJson": "{\"data\":[{\"name\":\"POLICY\",\"values\":{\"POL_ID\":\"P99\",\"TYPE\":\"RELO\",\"EFFECTIVE\":\"2025-01-01\",\"ACTIVE\":\"Y\"}}]}",
+    "transform": "{\n  \"tableData\": [\n    @AllValues(\"POLICY\")\n  ]\n}"
+  },
+  {
+    "name": "Merge two tables into one output object",
+    "description": "Combine fields from two different Epic tables into a single output JSON object",
+    "inputJson": "{\"data\":[{\"name\":\"EMPLOYEE\",\"values\":{\"EMP_ID\":\"E42\",\"NAME\":\"Bob\"}},{\"name\":\"ASSIGNMENT\",\"values\":{\"ASSIGN_ID\":\"A10\",\"START_DATE\":\"2025-03-15\",\"END_DATE\":\"2026-03-14\"}}]}",
+    "transform": "{\n  \"employeeId\": @Value(\"EMPLOYEE\", \"EMP_ID\"),\n  \"employeeName\": @Value(\"EMPLOYEE\", \"NAME\"),\n  \"assignmentId\": @Value(\"ASSIGNMENT\", \"ASSIGN_ID\"),\n  \"startDate\": @Value(\"ASSIGNMENT\", \"START_DATE\"),\n  \"endDate\": @Value(\"ASSIGNMENT\", \"END_DATE\")\n}"
+  }
+]

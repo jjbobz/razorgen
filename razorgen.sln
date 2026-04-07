@@ -1,0 +1,35 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "razor-runner", "razor-runner\razor-runner.csproj", "{799DD6DA-E4DE-4B7B-7086-8CD5CD6DC738}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "validator", "validator", "{F19D3D9B-0D8E-812D-98CC-4BC8016965EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorGenValidatorStub", "validator\RazorGenValidatorStub.csproj", "{F105327D-A65C-6CD6-56C8-F9C5EC34ECE6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{799DD6DA-E4DE-4B7B-7086-8CD5CD6DC738}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{799DD6DA-E4DE-4B7B-7086-8CD5CD6DC738}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{799DD6DA-E4DE-4B7B-7086-8CD5CD6DC738}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{799DD6DA-E4DE-4B7B-7086-8CD5CD6DC738}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F105327D-A65C-6CD6-56C8-F9C5EC34ECE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F105327D-A65C-6CD6-56C8-F9C5EC34ECE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F105327D-A65C-6CD6-56C8-F9C5EC34ECE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F105327D-A65C-6CD6-56C8-F9C5EC34ECE6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F105327D-A65C-6CD6-56C8-F9C5EC34ECE6} = {F19D3D9B-0D8E-812D-98CC-4BC8016965EC}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4D676E7E-6384-478B-9A06-241DBF6ED3FD}
+	EndGlobalSection
+EndGlobal

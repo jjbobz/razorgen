@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./RazorTransformStudio.exe --help)",
+      "Bash(./RazorTransformStudio.exe --run --template test --input \"{}\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(powershell -Command 'Get-Process | Where-Object { $_.Name -like '\\\\''*Razor*'\\\\'' }')",
+      "Bash(powershell -Command ':*)",
+      "Bash(where dotnet:*)",
+      "Bash(dotnet --version)",
+      "Bash(where csc:*)",
+      "Bash(dotnet --list-sdks)",
+      "Bash(mkdir -p \"F:/code_projects/razorgen/razor-runner\")",
+      "Bash(dotnet new:*)",
+      "Bash(dotnet add:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet publish:*)",
+      "Bash(powershell -Command \"\\(Get-Item 'F:\\\\code_projects\\\\razorgen\\\\razor-runner-dist\\\\razor-runner.exe'\\).Length / 1MB\")",
+      "Bash(ls f:/code_projects/razorgen/.env* f:/code_projects/razorgen/.gitignore f:/code_projects/razorgen/.github)",
+      "Bash(cat f:/code_projects/razorgen/.github/workflows/*.yml)"
+    ]
+  }
+}

@@ -5,7 +5,10 @@ services:
     ports:
       - "43000:43000"
     volumes:
+      # Secrets — never baked into the image
       - /mnt/cache/appdata/razorgen/.env:/app/.env:ro
+      # Patterns persist across container updates
+      - /mnt/cache/appdata/razorgen/patterns.json:/app/patterns.json
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:43000/login"]
