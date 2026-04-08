@@ -3,15 +3,19 @@
 // So: same EpicBlock model, same init block logic, same helper *behavior* as C# methods on TemplateBase + a small Razor header.
 
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RazorEngine;
+using RazorEngine.Compilation;
+using RazorEngine.Compilation.ReferenceResolver;
 using RazorEngine.Configuration;
 using RazorEngine.Templating;
 using RazorEngine.Text;
@@ -134,6 +138,73 @@ public abstract class HubEpicTemplateBase<T> : TemplateBase<T>
 }
 
 /// <summary>
+/// Filters out assemblies with no file path (dynamic/in-memory assemblies loaded by .NET 5+).
+/// Without this, Roslyn crashes trying to open "" as a file when building metadata references.
+/// </summary>
+internal class SafeReferenceResolver : IReferenceResolver
+{
+    private readonly UseCurrentAssembliesReferenceResolver _inner = new();
+
+    public IEnumerable<CompilerReference> GetReferences(TypeContext context, IEnumerable<CompilerReference>? references = null)
+    {
+        foreach (var r in _inner.GetReferences(context, references))
+        {
+            if (r.ReferenceType == CompilerReference.CompilerReferenceType.DirectAssemblyReference)
+            {
+                Assembly? asm = null;
+                try { asm = r.Visit(AssemblyExtractor.Instance); } catch { }
+                if (asm == null) continue;
+
+                var loc = asm.Location;
+                if (string.IsNullOrEmpty(loc) || !File.Exists(loc))
+                {
+                    // In a non-single-file self-contained publish the extraction dir is AppContext.BaseDirectory.
+                    // Try to find the assembly file there by assembly simple name.
+                    var candidate = Path.Combine(AppContext.BaseDirectory, asm.GetName().Name + ".dll");
+                    if (File.Exists(candidate))
+                        yield return CompilerReference.From(candidate);
+                    // If still not found, skip — don't pass an empty path to Roslyn
+                    continue;
+                }
+            }
+            yield return r;
+        }
+    }
+
+    private class AssemblyExtractor : CompilerReference.ICompilerReferenceVisitor<Assembly?>
+    {
+        public static readonly AssemblyExtractor Instance = new();
+        public Assembly? Visit(Assembly assembly) => assembly;
+        public Assembly? Visit(string file) => null;
+        public Assembly? Visit(Stream stream) => null;
+        public Assembly? Visit(byte[] byteArray) => null;
+    }
+}
+
+/// <summary>
+/// In-memory caching provider — avoids DefaultCachingProvider which calls Directory.Delete("")
+/// during construction on some RazorEngine.NetCore builds, crashing before any template runs.
+/// razor-runner is a short-lived process so in-memory cache is fine.
+/// </summary>
+internal class InMemoryCachingProvider : ICachingProvider
+{
+    private readonly ConcurrentDictionary<string, ICompiledTemplate> _cache = new();
+
+    public void CacheTemplate(ICompiledTemplate template, ITemplateKey templateKey)
+        => _cache[templateKey.GetUniqueKeyString()] = template;
+
+    public bool TryRetrieveTemplate(ITemplateKey templateKey, Type modelType, out ICompiledTemplate compiledTemplate)
+        => _cache.TryGetValue(templateKey.GetUniqueKeyString(), out compiledTemplate!);
+
+    public void InvalidateCache(ITemplateKey templateKey)
+        => _cache.TryRemove(templateKey.GetUniqueKeyString(), out _);
+
+    public RazorEngine.Templating.TypeLoader TypeLoader { get; } = new RazorEngine.Templating.TypeLoader(AppDomain.CurrentDomain, new List<System.Reflection.Assembly>());
+
+    public void Dispose() { }
+}
+
+/// <summary>
 /// Hub-equivalent json-epic merge (RazorEngine config + model type + init block).
 /// </summary>
 internal static class HubRazorJsonMergeDocumentBuilderDuplicate
@@ -212,10 +283,8 @@ internal static class HubRazorJsonMergeDocumentBuilderDuplicate
 				EncodedStringFactory = new HtmlEncodedStringFactory(),
 				DisableTempFileLocking = true,
 				BaseTemplateType = typeof(HubEpicTemplateBase<>),
-				CachingProvider = new DefaultCachingProvider(t =>
-				{
-					Directory.Delete(t, true);
-				})
+				CachingProvider = new InMemoryCachingProvider(),
+				ReferenceResolver = new SafeReferenceResolver()
 			};
 
 			Engine.Razor = RazorEngineService.Create(config);

@@ -107,25 +107,28 @@
     }
 
     /* ── Build page ── */
-    .build-body {
-      flex: 1; display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 0; overflow: hidden; min-height: 0;
-    }
+    .build-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+    .build-row  { display: flex; flex: 1; overflow: hidden; min-height: 0; border-bottom: 1px solid var(--border); }
+    .build-row:last-child { border-bottom: none; }
     .panel {
       display: flex; flex-direction: column; overflow: hidden;
-      border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border); flex: 1;
     }
-    .panel:nth-child(2n)  { border-right: none; }
-    .panel:nth-child(n+3) { border-bottom: none; }
+    .panel:last-child { border-right: none; }
     .panel-head {
-      padding: 8px 12px; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 10px 6px 12px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 6px;
       flex-shrink: 0; background: var(--surface);
     }
-    .panel-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+    .panel-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; flex: 1; }
     .panel-hint  { font-size: 11px; color: var(--faint); }
+    .panel-copy-btn {
+      padding: 2px 7px; font-size: 11px; font-weight: 600; line-height: 1.5;
+      background: none; border: 1px solid var(--border); border-radius: 4px;
+      color: var(--faint); cursor: pointer; transition: all .12s; white-space: nowrap; flex-shrink: 0;
+    }
+    .panel-copy-btn:hover { color: var(--text); border-color: #4a6080; }
+    .panel-copy-btn.ok { color: var(--success); border-color: var(--success); }
 
     textarea {
       flex: 1; width: 100%; padding: 10px 12px;
@@ -166,6 +169,42 @@
     #status-msg { font-size: 12px; color: var(--muted); }
     #err-msg    { font-size: 12px; color: var(--danger); }
 
+    /* ── Insert field popover ── */
+    .insert-wrap { position: relative; flex-shrink: 0; }
+    .insert-popover {
+      display: none; position: absolute; top: calc(100% + 4px); right: 0; z-index: 100;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 9px;
+      padding: 12px; width: 280px; box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    }
+    .insert-popover.open { display: block; }
+    .insert-popover-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+    .insert-row { display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; }
+    .insert-row label { font-size: 10px; font-weight: 600; color: var(--faint); text-transform: uppercase; letter-spacing: .05em; }
+    .insert-row input {
+      padding: 5px 8px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 5px; color: var(--text); font-size: 12px; font-family: var(--mono);
+      outline: none; width: 100%;
+    }
+    .insert-row input:focus { border-color: var(--accent); }
+    .insert-actions { display: flex; gap: 6px; margin-top: 10px; }
+
+    /* ── Panel action buttons (test / save) ── */
+    .panel-test-btn, .btn-save-inline {
+      padding: 2px 8px; font-size: 11px; font-weight: 600; line-height: 1.5;
+      border-radius: 4px; cursor: pointer; transition: all .12s;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .panel-test-btn {
+      background: var(--accent-dim); border: 1px solid rgba(99,102,241,.3); color: var(--accent-h);
+    }
+    .panel-test-btn:hover:not(:disabled) { background: var(--accent); color: #fff; }
+    .panel-test-btn:disabled { opacity: 0.35; cursor: default; }
+    .btn-save-inline {
+      background: none; border: 1px solid var(--border); color: var(--faint);
+    }
+    .btn-save-inline:hover:not(:disabled) { color: var(--warn); border-color: var(--warn); }
+    .btn-save-inline:disabled { opacity: 0.35; cursor: default; }
+
     /* ── Chip hint ── */
     .chip-hint { font-size: 10px; color: var(--faint); padding: 0 8px 4px; line-height: 1.4; }
 
@@ -197,10 +236,10 @@
     .builder-workspace { flex: 1; display: flex; overflow: hidden; min-height: 0; }
     .builder-left {
       width: 320px; flex-shrink: 0; display: flex; flex-direction: column;
-      border-right: 1px solid var(--border); overflow-y: auto;
+      border-right: 1px solid var(--border); overflow: hidden;
     }
     .builder-right { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-    .op-picker { padding: 12px; border-bottom: 1px solid var(--border); }
+    .op-picker { padding: 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .op-picker-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
     .op-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
     .op-btn {
@@ -209,8 +248,8 @@
       text-align: left; transition: all .12s;
     }
     .op-btn:hover { color: var(--text); border-color: var(--accent); }
-    .op-cards { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
-    .op-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .op-cards { flex: 1; overflow-y: auto; min-height: 0; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+    .op-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; min-width: 0; width: 100%; }
     .op-card-head {
       display: flex; align-items: center; gap: 8px;
       padding: 8px 10px; background: var(--surface2);
@@ -228,11 +267,12 @@
     .field-row input, .field-row select {
       padding: 5px 8px; background: var(--surface2); border: 1px solid var(--border);
       border-radius: 5px; color: var(--text); font-size: 12px; outline: none;
+      width: 100%; min-width: 0; box-sizing: border-box;
     }
     .field-row input:focus, .field-row select:focus { border-color: var(--accent); }
-    .mapping-rows { display: flex; flex-direction: column; gap: 4px; }
-    .mapping-row { display: flex; gap: 4px; align-items: center; }
-    .mapping-row input { flex: 1; }
+    .mapping-rows { display: flex; flex-direction: column; gap: 4px; width: 100%; min-width: 0; }
+    .mapping-row { display: flex; gap: 4px; align-items: center; min-width: 0; }
+    .mapping-row input { flex: 1; min-width: 0; width: 0; }
     .mapping-del { background: none; border: none; color: var(--faint); cursor: pointer; font-size: 15px; }
     .mapping-del:hover { color: var(--danger); }
     .add-mapping-btn {
@@ -337,23 +377,26 @@
     <div id="page-build">
       <div class="build-body">
 
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Input JSON</span>
-            <span class="panel-hint">Paste the payload</span>
-          </div>
-          <textarea id="input-box" spellcheck="false" placeholder='{"data": [
+        <!-- Top row: 3 panels -->
+        <div class="build-row">
+
+          <div class="panel">
+            <div class="panel-head">
+              <span class="panel-title">Input JSON</span>
+              <button class="panel-copy-btn" id="copy-input" onclick="copyPanel('input-box','copy-input')" title="Copy input JSON">Copy</button>
+            </div>
+            <textarea id="input-box" spellcheck="false" oninput="onResultInput()" placeholder='{"data": [
   {"name": "ASSIGNMENT", "values": {"ID": "123", "START_DATE": "2026-01-01"}},
   {"name": "EMPLOYEE",   "values": {"FIRST_NAME": "Jane", "LAST_NAME": "Miller"}}
 ]}'></textarea>
-        </div>
-
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">What should it do?</span>
-            <span class="panel-hint">Plain English — use Quick Insert in sidebar</span>
           </div>
-          <textarea id="desc-box" oninput="checkReady()" placeholder="Examples:
+
+          <div class="panel">
+            <div class="panel-head">
+              <span class="panel-title">What should it do?</span>
+              <button class="panel-copy-btn" id="copy-desc" onclick="copyPanel('desc-box','copy-desc')" title="Copy description">Copy</button>
+            </div>
+            <textarea id="desc-box" oninput="checkReady()" placeholder="Examples:
 
 • In ASSIGNMENT_MAILING_ADDRESS, remap LOCATION_TYPE:
   'Host Office' → 'Destination Work Address'
@@ -366,22 +409,67 @@
 • Set ASSIGNMENT.COMMENTS to:
   'Reason: ' + SERVICE_ORDER_CF.CANCELLATION_REASON
   ' | Date: ' + SERVICE_ORDER_CF.LAST_DATE"></textarea>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <span class="panel-title">Existing Transform <span style="font-weight:400;color:var(--faint)">(optional)</span></span>
+              <button class="panel-copy-btn" id="copy-existing" onclick="copyPanel('existing-box','copy-existing')" title="Copy existing transform">Copy</button>
+              <button class="panel-test-btn" id="btn-test-existing" onclick="testExisting()" title="Load into output and run preview" disabled>&#x25B6; Test</button>
+            </div>
+            <textarea id="existing-box" spellcheck="false" oninput="checkTestReady()" placeholder="Paste an existing .cs transform here to update or fix it. Leave blank to build from scratch."></textarea>
+          </div>
+
         </div>
 
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Existing Transform <span style="font-weight:400;color:var(--faint)">(optional)</span></span>
-            <span class="panel-hint">Paste if updating an existing one</span>
-          </div>
-          <textarea id="existing-box" spellcheck="false" placeholder="Paste an existing .cs transform here to update or fix it. Leave blank to build from scratch."></textarea>
-        </div>
+        <!-- Bottom row: 2 panels -->
+        <div class="build-row">
 
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Generated Transform</span>
-            <span class="panel-hint" id="result-hint">Ready to paste into your system</span>
+          <div class="panel">
+            <div class="panel-head">
+              <span class="panel-title">Output Transform</span>
+              <span class="panel-hint" id="result-hint">Generated or paste directly to preview</span>
+              <div class="insert-wrap">
+                <button class="panel-copy-btn" onclick="toggleInsert()" id="btn-insert-field" title="Insert a field without AI">+ Field</button>
+                <div class="insert-popover" id="insert-popover">
+                  <div class="insert-popover-title">Insert field — no AI needed</div>
+                  <div class="insert-row">
+                    <label>After field (name in quotes)</label>
+                    <input id="ins-after" type="text" placeholder='e.g. firstName' spellcheck="false">
+                  </div>
+                  <div class="insert-row">
+                    <label>New field name</label>
+                    <input id="ins-name" type="text" placeholder='e.g. employeeFirstName' spellcheck="false">
+                  </div>
+                  <div class="insert-row">
+                    <label>Table</label>
+                    <input id="ins-table" type="text" placeholder='e.g. EMPLOYEE' spellcheck="false">
+                  </div>
+                  <div class="insert-row">
+                    <label>Field</label>
+                    <input id="ins-field" type="text" placeholder='e.g. FIRST_NAME' spellcheck="false">
+                  </div>
+                  <div class="insert-actions">
+                    <button class="btn btn-primary" style="padding:5px 12px;font-size:12px;" onclick="doInsertField()">Insert</button>
+                    <button class="btn btn-ghost"   style="padding:5px 12px;font-size:12px;" onclick="toggleInsert()">Cancel</button>
+                  </div>
+                </div>
+              </div>
+              <button class="panel-copy-btn" id="copy-result" onclick="copyPanel('result-box','copy-result')" title="Copy transform">Copy</button>
+              <button class="btn-save-inline" id="btn-save" onclick="savePattern()" disabled title="Save as reusable pattern">&#x2605; Save Pattern</button>
+            </div>
+            <textarea id="result-box" spellcheck="false" oninput="onResultInput()" placeholder="Generated transform appears here — or paste one directly and click Run Preview…"></textarea>
           </div>
-          <textarea id="result-box" readonly spellcheck="false" placeholder="Generated .cs transform will appear here…"></textarea>
+
+          <div class="panel">
+            <div class="panel-head">
+              <span class="panel-title">Preview Output</span>
+              <span id="preview-status" class="panel-hint"></span>
+              <button class="panel-copy-btn" id="copy-preview" onclick="copyPanel('preview-box','copy-preview')" title="Copy preview output">Copy</button>
+            </div>
+            <textarea id="preview-box" readonly spellcheck="false" placeholder="Run Preview to see the transform output against your input JSON…"></textarea>
+          </div>
+
         </div>
 
       </div>
@@ -389,22 +477,12 @@
       <div class="actions">
         <button class="btn btn-primary" id="btn-gen"     onclick="generate()"  disabled>Generate</button>
         <button class="btn btn-ghost"   id="btn-preview" onclick="runPreview()" disabled>Run Preview</button>
-        <button class="btn btn-ghost"   id="btn-copy"    onclick="copyResult()" disabled>Copy</button>
-        <button class="btn btn-ghost"   id="btn-save"   onclick="savePattern()" disabled>Save as Pattern</button>
-        <button class="btn btn-ghost"                    onclick="clearAll()">Clear</button>
+        <button class="btn btn-ghost"                    onclick="clearAll()">Clear All</button>
         <div class="status">
           <div class="spinner" id="spinner"></div>
           <span id="status-msg"></span>
           <span id="err-msg"></span>
         </div>
-      </div>
-
-      <div id="preview-wrap" style="display:none;flex-shrink:0;border-top:1px solid var(--border);max-height:220px;overflow:hidden;flex-direction:column;">
-        <div class="panel-head" style="background:var(--surface);">
-          <span class="panel-title">Preview Output</span>
-          <span id="preview-status" class="panel-hint"></span>
-        </div>
-        <textarea id="preview-box" readonly spellcheck="false" style="max-height:180px;"></textarea>
       </div>
     </div>
 
@@ -580,12 +658,73 @@ TYPE 1 — Pass-through (mutate modelJson):
   @{ ... C# logic ... }
   @Raw(modelJson.ToString())
 
-TYPE 2 — Output template (new JSON):
-  @{ ... setup ... }
-  { "field": @Value("OBJ","FIELD"), ... }
+TYPE 2 — Output template (emit new JSON):
+  @{ ... variable setup ... }
+  then one or more @if/else if/else branches, each wrapping its JSON in a separate <text>...</text> block.
+  Inside each <text> block, fields are output using inline @(...) expressions.
+  Optional fields use the single-line inline @if pattern (see below).
 
 TYPE 3 — Command/upsert:
   { "command": "unitOfWork", "commandList": [ ... ] }
+
+CRITICAL: When updating an existing transform, NEVER switch TYPE or output style.
+
+## MULTI-BRANCH OUTPUT STRUCTURE — THE MOST IMPORTANT RULE
+
+Each @if / else if / else branch MUST have its OWN separate <text>...</text> block.
+NEVER put a multi-line @if { } block INSIDE a <text> block.
+
+CORRECT structure (each branch = its own <text> block):
+  @if(conditionA) {
+  <text>{
+    "field": "@(var["values"]["X"])"
+  }</text>
+  } else if(conditionB) {
+  <text>{
+    "field": "@(var["values"]["Y"])"
+  }</text>
+  } else {
+  <text>{
+    "field": "@(var["values"]["Z"])"
+  }</text>
+  }
+
+WRONG — nested @if blocks inside <text>:
+  @if(outerCond) {
+  <text>{
+    @if(innerCond) {           ← ILLEGAL — multi-line @if inside <text>
+    "field": "value"
+    }
+  }</text>
+  }
+
+If you need conditional branches WITHIN one output block, keep ALL the @if logic in the @{} variables
+block as boolean variables, then use only single-line inline @if inside <text> for field-level optionality.
+
+## OPTIONAL FIELDS INSIDE <text> BLOCKS
+
+Inside <text>...</text>, ONLY use the single-line inline @if pattern. Never multi-line.
+
+For a field that is null vs a value:
+  "startDate": @if(startDateIsEmpty){<text>null</text>}else{<text>"@startDateValue"</text>},
+
+For an entire optional line (with trailing comma inside the <text>):
+  @if(!familySizeIsEmpty){<text>    "familySize": @familySizeValue,
+</text>}
+
+## RAZOR EXPRESSION SYNTAX — CRITICAL
+
+Any @expression containing ["key"] indexers or string-arg method calls MUST use @(...):
+  WRONG:  "@employee["values"]["FIELD"]"      ← the " in ["key"] closes the surrounding JSON quote
+  CORRECT: "@(employee["values"]["FIELD"])"
+
+  WRONG:  @x["name"].ToString()
+  CORRECT: @(x["name"].ToString())
+
+For date formatting, ALWAYS pre-compute in @{} block:
+  WRONG:  @(((DateTime)val).ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))   ← nested quotes break parser
+  CORRECT: pre-assign in @{}: var startDateStr = startDateIsEmpty ? null : ((DateTime)startDateValue).ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+           then output: @if(startDateIsEmpty){<text>null</text>}else{<text>"@startDateStr"</text>}
 
 ## PATTERNS
 
@@ -597,6 +736,14 @@ TYPE 3 — Command/upsert:
   var prop = ((JObject)x["values"]).Property("OLD"); prop.Replace(new JProperty("NEW", prop.Value));
   var toRemove = items.Where(r => string.IsNullOrEmpty(r["values"]["ID"]?.ToString())).ToList();
   foreach(var item in toRemove) { ((JArray)modelJson["data"]).Remove(item); }
+
+## CRITICAL RULES FOR UPDATES
+When an existing transform is provided:
+- Output the COMPLETE updated transform — every single line of the original, with ONLY the requested change.
+- NEVER switch data access patterns, output style, or transform type.
+- Make only the specific surgical changes requested. Leave all other code exactly as-is, character for character.
+- Preserve all variable names, @if/@else structure, <text> blocks, output format, and comments.
+- When adding a new output field, copy the exact pattern of the adjacent existing field on the line above it.
 
 ## RULES
 - No @using, @model, class definitions, async/await
@@ -617,6 +764,40 @@ function chip(key) {
 function checkReady() {
   document.getElementById('btn-gen').disabled =
     !document.getElementById('desc-box').value.trim();
+}
+
+function checkTestReady() {
+  const hasExisting  = !!document.getElementById('existing-box').value.trim();
+  document.getElementById('btn-test-existing').disabled = !hasExisting;
+}
+
+// Called when user types directly into the result box
+function onResultInput() {
+  const hasResult  = !!document.getElementById('result-box').value.trim();
+  const hasInput   = !!document.getElementById('input-box').value.trim();
+  document.getElementById('copy-result').disabled = !hasResult;
+  document.getElementById('btn-save').disabled    = !hasResult;
+  document.getElementById('btn-preview').disabled = !(hasResult && APP_CONFIG?.runnerAvailable && hasInput);
+  if (hasResult) document.getElementById('result-hint').textContent = 'Ready — run preview to verify output';
+}
+
+// Load existing transform into the output panel so it can be previewed directly
+function testExisting() {
+  const existing = document.getElementById('existing-box').value.trim();
+  if (!existing) return;
+  const out = document.getElementById('result-box');
+  out.value = existing;
+  out.classList.add('ready');
+  onResultInput();
+  // Scroll to output panel
+  out.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // Auto-run preview if input is present
+  const inputJson = document.getElementById('input-box').value.trim();
+  if (inputJson && APP_CONFIG?.runnerAvailable) {
+    runPreview();
+  } else {
+    document.getElementById('result-hint').textContent = 'Loaded — add Input JSON then click Run Preview';
+  }
 }
 
 function showPage(p) {
@@ -718,8 +899,10 @@ function setError(msg) {
 
 async function generate() {
   setError(''); setStatus('Generating…', true);
-  document.getElementById('btn-gen').disabled     = true;
-  document.getElementById('btn-copy').disabled    = true;
+  const genBtn = document.getElementById('btn-gen');
+  genBtn.disabled     = true;
+  genBtn.textContent  = 'Generating…';
+  document.getElementById('copy-result').disabled = true;
   document.getElementById('btn-save').disabled    = true;
   document.getElementById('btn-preview').disabled = true;
 
@@ -749,9 +932,19 @@ async function generate() {
   if (inputJson) userMsg += `INPUT JSON:\n\`\`\`json\n${inputJson.slice(0,6000)}\n\`\`\`\n\n`;
   if (existing)  userMsg += `EXISTING TRANSFORM TO UPDATE:\n\`\`\`\n${existing.slice(0,4000)}\n\`\`\`\n\n`;
   userMsg += `WHAT THE TRANSFORM SHOULD DO:\n${desc.slice(0,4000)}\n\n`;
-  userMsg += existing
-    ? 'Update the existing transform to satisfy the instructions. Output the complete updated transform.'
-    : 'Write the complete .cs Razor transform. Choose the correct transform type. Follow all syntax rules exactly.';
+  if (existing) {
+    userMsg += `Update the existing transform to satisfy the instructions above.
+
+CRITICAL RULES — failure to follow these exactly is wrong:
+1. Output the COMPLETE updated transform — every single line of the original, with only the requested change added.
+2. Do NOT change the transform type. If the existing transform is a Type 2 output template (emits a JSON structure with inline @Value() or @(...) calls), keep it as Type 2. Do NOT convert it to a pass-through (@Raw(modelJson.ToString())).
+3. Do NOT add a @{} block with assignments to modelJson or variables if the existing transform does not have one — or if it does, add new variables there, not new output fields.
+4. Do NOT use EpicData, JArray.FromObject, or any pattern not already present in the existing transform.
+5. Adding a new output field to a Type 2 template means adding a new line like: "fieldName": @Value("TABLE","FIELD"), in the JSON output body — NOT mutating variables.
+6. Preserve all @if/@else branches, <text> blocks, variable names, comments, and formatting exactly.`;
+  } else {
+    userMsg += 'Write the complete .cs Razor transform. Choose the correct transform type. Follow all syntax rules exactly.';
+  }
 
   const systemWithPatterns = patternContext ? SYSTEM_PROMPT + patternContext : SYSTEM_PROMPT;
 
@@ -767,7 +960,7 @@ async function generate() {
     const clean = raw.replace(/^```[^\n]*\n?/, '').replace(/\n?```$/, '').trim();
     const out   = document.getElementById('result-box');
     out.value = clean; out.classList.add('ready');
-    document.getElementById('btn-copy').disabled    = false;
+    document.getElementById('copy-result').disabled = false;
     document.getElementById('btn-save').disabled    = false;
     document.getElementById('btn-preview').disabled = !(APP_CONFIG?.runnerAvailable && inputJson);
     document.getElementById('result-hint').textContent = 'Ready — run preview to verify output';
@@ -776,6 +969,7 @@ async function generate() {
   } catch (e) {
     setError('Error: ' + e.message);
   } finally {
+    document.getElementById('btn-gen').textContent = 'Generate';
     checkReady();
   }
 }
@@ -789,11 +983,9 @@ async function runPreview() {
   setStatus('Running preview…', true);
   document.getElementById('btn-preview').disabled = true;
 
-  const wrap   = document.getElementById('preview-wrap');
   const box    = document.getElementById('preview-box');
   const status = document.getElementById('preview-status');
-  wrap.style.display = 'flex';
-  box.value = ''; box.className = '';
+  box.value = 'Running…'; box.className = '';
 
   try {
     const res  = await fetch('/api/preview', {
@@ -805,11 +997,12 @@ async function runPreview() {
       box.value = data.output;
       status.textContent = 'Preview succeeded ✓';
       setStatus('Preview done ✓', false);
+      setTimeout(() => setStatus('', false), 3000);
     } else {
       box.value = data.message || 'Unknown error';
       box.className = 'error';
       status.textContent = 'Preview failed';
-      setStatus('', false);
+      setError('Preview failed — see output panel');
     }
   } catch (e) {
     box.value = e.message; box.className = 'error';
@@ -817,20 +1010,102 @@ async function runPreview() {
     setError('Preview error: ' + e.message);
   } finally {
     document.getElementById('btn-preview').disabled = false;
-    setTimeout(() => setStatus('', false), 3000);
   }
 }
 
-// ── Copy / Clear ──────────────────────────────────────────────────────────────
-async function copyResult() {
-  const text = document.getElementById('result-box').value;
+// ── Copy panel ────────────────────────────────────────────────────────────────
+async function copyPanel(boxId, btnId) {
+  const text = document.getElementById(boxId).value;
   if (!text) return;
   try { await navigator.clipboard.writeText(text); } catch {
-    document.getElementById('result-box').select(); document.execCommand('copy');
+    document.getElementById(boxId).select(); document.execCommand('copy');
   }
-  const btn = document.getElementById('btn-copy');
+  const btn = document.getElementById(btnId);
+  const prev = btn.textContent;
   btn.textContent = 'Copied!'; btn.classList.add('ok');
-  setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
+  setTimeout(() => { btn.textContent = prev; btn.classList.remove('ok'); }, 2000);
+}
+
+// ── Insert Field (no AI) ─────────────────────────────────────────────────────
+function toggleInsert() {
+  const pop = document.getElementById('insert-popover');
+  pop.classList.toggle('open');
+}
+
+function doInsertField() {
+  const afterField = document.getElementById('ins-after').value.trim();
+  const newName    = document.getElementById('ins-name').value.trim();
+  const table      = document.getElementById('ins-table').value.trim().toUpperCase();
+  const field      = document.getElementById('ins-field').value.trim().toUpperCase();
+
+  if (!newName || !table || !field) {
+    alert('New field name, Table, and Field are all required.');
+    return;
+  }
+
+  const box = document.getElementById('result-box');
+  const code = box.value;
+  if (!code) { alert('Output Transform is empty — nothing to insert into.'); return; }
+
+  // Detect transform style: modelJson["data"] → pass-through; @Value → output template
+  const usesModelJson = /modelJson\["data"\]/.test(code);
+
+  let newLine;
+  if (usesModelJson) {
+    // Find the C# variable bound to this table
+    // e.g.  var employee = modelJson["data"].FirstOrDefault(... "EMPLOYEE" ...)
+    const varRe = new RegExp(`var\\s+(\\w+)\\s*=\\s*modelJson\\["data"\\][^;]*?"${table}"`, 's');
+    const varMatch = code.match(varRe);
+    const varName = varMatch ? varMatch[1] : table.toLowerCase();
+    // Use single-quote keys if the rest of the output does
+    const usesSingle = /'\w+'\s*:/.test(code);
+    newLine = usesSingle
+      ? `  '${newName}': '@(${varName}["values"]["${field}"])'`
+      : `  "${newName}": "@(${varName}["values"]["${field}"])"`;
+  } else {
+    // @Value("TABLE", "FIELD") already returns a quoted JSON string — no surrounding quotes needed
+    newLine = `  "${newName}": @Value("${table}", "${field}")`;
+  }
+
+  const lines = code.split('\n');
+  let inserted = false;
+
+  if (afterField) {
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes(`'${afterField}'`) || lines[i].includes(`"${afterField}"`)) {
+        lines[i] = lines[i].replace(/,?\s*$/, ',');
+        lines.splice(i + 1, 0, newLine);
+        inserted = true;
+        break;
+      }
+    }
+  }
+
+  if (!inserted) {
+    // Fallback: insert before last closing brace/bracket
+    for (let i = lines.length - 1; i >= 0; i--) {
+      if (/^\s*[}\]]/.test(lines[i])) {
+        for (let j = i - 1; j >= 0; j--) {
+          if (lines[j].trim()) { lines[j] = lines[j].replace(/,?\s*$/, ','); break; }
+        }
+        lines.splice(i, 0, newLine);
+        inserted = true;
+        break;
+      }
+    }
+  }
+
+  if (!inserted) lines.push(newLine);
+
+  box.value = lines.join('\n');
+
+  // Close popover, clear inputs, trigger preview-button state
+  toggleInsert();
+  document.getElementById('ins-after').value = '';
+  document.getElementById('ins-name').value  = '';
+  document.getElementById('ins-table').value = '';
+  document.getElementById('ins-field').value = '';
+  box.dispatchEvent(new Event('input'));
 }
 
 // ── Save as Pattern ───────────────────────────────────────────────────────────
@@ -868,12 +1143,11 @@ function clearAll() {
     const el = document.getElementById(id);
     el.value = ''; el.className = '';
   });
-  document.getElementById('result-box').classList.remove('ready');
-  document.getElementById('btn-copy').disabled    = true;
-  document.getElementById('btn-save').disabled    = true;
-  document.getElementById('btn-preview').disabled = true;
-  document.getElementById('preview-wrap').style.display = 'none';
-  document.getElementById('result-hint').textContent = 'Ready to paste into your system';
+  document.getElementById('btn-save').disabled           = true;
+  document.getElementById('btn-preview').disabled        = true;
+  document.getElementById('btn-test-existing').disabled  = true;
+  document.getElementById('preview-status').textContent  = '';
+  document.getElementById('result-hint').textContent     = 'Generated or paste directly to preview';
   setStatus('', false); checkReady();
 }
 
@@ -1012,92 +1286,124 @@ function renderOpCards() {
 }
 
 // ── Code generators ───────────────────────────────────────────────────────────
+// Convert TABLE_NAME → camelCase variable name
+function tableVarName(tableName) {
+  return (tableName || 'row').toLowerCase().replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+}
+
+// Each generator returns either:
+//   { kind:'table', table:'TABLE_NAME', lines:['inner code lines'] }
+//   { kind:'standalone', code:'full code block' }
+//   { kind:'comment', code:'@* ... *@' }
 const G = {
   'value-remap'(op) {
-    const {object:obj,field,default:def,mappings=[]} = op.data;
-    if (!obj||!field) return `@* Value remap: fill in object and field *@`;
-    const cases = mappings.map(m=>`        case "${m.from}": x["values"]["${field}"] = "${m.to}"; break;`).join('\n');
-    const dflt = def==='null' ? `        default: x["values"]["${field}"] = null; break;` : `        default: break;`;
-    return `    var x = modelJson["data"].FirstOrDefault(a => a["name"].ToString() == "${obj}");
-    if (x != null) {
-        switch (x["values"]["${field}"]?.ToString()) {
-${cases}
-${dflt}
-        }
-    }`;
+    const {object:obj, field, default:def, mappings=[]} = op.data;
+    if (!obj || !field) return { kind:'comment', code:`@* Value remap: fill in object and field *@` };
+    const v = tableVarName(obj);
+    const cases = mappings.map(m => `            case "${m.from}": ${v}["values"]["${field}"] = "${m.to}"; break;`).join('\n');
+    const dflt = def === 'null'
+      ? `            default: ${v}["values"]["${field}"] = null; break;`
+      : `            default: break;`;
+    return { kind:'table', table:obj, lines:[
+      `        switch (${v}["values"]["${field}"]?.ToString()) {`,
+      cases,
+      dflt,
+      `        }`
+    ]};
   },
   'field-rename'(op) {
-    const {object:obj,oldField,newField} = op.data;
-    if (!obj||!oldField||!newField) return `@* Field rename: fill in all fields *@`;
-    return `    var x = modelJson["data"].FirstOrDefault(a => a["name"].ToString() == "${obj}");
-    if (x != null) {
-        var prop = ((JObject)x["values"]).Property("${oldField}");
-        if (prop != null) prop.Replace(new JProperty("${newField}", prop.Value));
-    }`;
+    const {object:obj, oldField, newField} = op.data;
+    if (!obj || !oldField || !newField) return { kind:'comment', code:`@* Field rename: fill in all fields *@` };
+    const v = tableVarName(obj);
+    return { kind:'table', table:obj, lines:[
+      `        var prop_${op.id} = ((JObject)${v}["values"]).Property("${oldField}");`,
+      `        if (prop_${op.id} != null) prop_${op.id}.Replace(new JProperty("${newField}", prop_${op.id}.Value));`
+    ]};
   },
   'copy-field'(op) {
-    const {srcObject,srcField,tgtObject,tgtField} = op.data;
-    if (!srcObject||!srcField||!tgtObject||!tgtField) return `@* Copy field: fill in all fields *@`;
-    return `    var src = modelJson["data"].FirstOrDefault(a => a["name"].ToString() == "${srcObject}");
-    var tgt = modelJson["data"].FirstOrDefault(a => a["name"].ToString() == "${tgtObject}");
-    if (src != null && tgt != null) { tgt["values"]["${tgtField}"] = src["values"]["${srcField}"]; }`;
+    const {srcObject, srcField, tgtObject, tgtField} = op.data;
+    if (!srcObject || !srcField || !tgtObject || !tgtField) return { kind:'comment', code:`@* Copy field: fill in all fields *@` };
+    const src = tableVarName(srcObject), tgt = tableVarName(tgtObject);
+    // Needs both vars — emit as standalone using already-declared vars if possible
+    return { kind:'standalone', code:
+      `    if (${src} != null && ${tgt} != null) { ${tgt}["values"]["${tgtField}"] = ${src}["values"]["${srcField}"]; }`,
+      tables:[srcObject, tgtObject]
+    };
   },
   'remove-empty'(op) {
-    const {object:obj,field,matchType} = op.data;
-    if (!obj||!field) return `@* Remove if empty: fill in object and field *@`;
-    if (matchType==='multi') return `    var items = modelJson["data"].Where(a => a["name"].ToString() == "${obj}").ToList();
-    var toRemove = items.Where(r => string.IsNullOrEmpty(r["values"]["${field}"]?.ToString())).ToList();
-    foreach (var item in toRemove) { ((JArray)modelJson["data"]).Remove(item); }`;
-    return `    var x = modelJson["data"].FirstOrDefault(a => a["name"].ToString() == "${obj}");
-    if (x != null && string.IsNullOrEmpty(x["values"]["${field}"]?.ToString())) { x.Remove(); }`;
+    const {object:obj, field, matchType} = op.data;
+    if (!obj || !field) return { kind:'comment', code:`@* Remove if empty: fill in object and field *@` };
+    const v = tableVarName(obj);
+    if (matchType === 'multi') {
+      return { kind:'standalone', code:
+        `    var ${v}_toRemove = modelJson["data"].Where(a => a["name"].ToString() == "${obj}" && string.IsNullOrEmpty(a["values"]["${field}"]?.ToString())).ToList();\n` +
+        `    foreach (var item in ${v}_toRemove) { ((JArray)modelJson["data"]).Remove(item); }`
+      };
+    }
+    return { kind:'table', table:obj, lines:[
+      `        if (string.IsNullOrEmpty(${v}["values"]["${field}"]?.ToString())) { ${v}.Remove(); }`
+    ]};
   },
   'rename-object'(op) {
-    const {oldName,newName} = op.data;
-    if (!oldName||!newName) return `@* Rename object: fill in names *@`;
-    return `    modelJson["data"].Where(a => a["name"].ToString() == "${oldName}").ToList().ForEach(a => a["name"] = "${newName}");`;
+    const {oldName, newName} = op.data;
+    if (!oldName || !newName) return { kind:'comment', code:`@* Rename object: fill in names *@` };
+    return { kind:'standalone', code:
+      `    modelJson["data"].Where(a => a["name"].ToString() == "${oldName}").ToList().ForEach(a => a["name"] = "${newName}");`
+    };
   },
   'new-object'(op) {
-    const {objName,fields=''} = op.data;
-    if (!objName) return `@* New object: fill in object name *@`;
-    const fLines = fields.split('\n').filter(l=>l.trim()).map(l=>{
-      const eq=l.indexOf('='); if(eq<0) return '';
-      const k=l.slice(0,eq).trim(), v=l.slice(eq+1).trim();
-      if(v.startsWith('~')){ const [,so,sf]=v.slice(1).split('.'); return `    obj["values"]["${k}"] = modelJson["data"].FirstOrDefault(a=>a["name"].ToString()=="${so}")?["values"]["${sf}"];`; }
-      return `    obj["values"]["${k}"] = "${v}";`;
+    const {objName, fields=''} = op.data;
+    if (!objName) return { kind:'comment', code:`@* New object: fill in object name *@` };
+    const v = tableVarName(objName) + 'New';
+    const fLines = fields.split('\n').filter(l => l.trim()).map(l => {
+      const eq = l.indexOf('='); if (eq < 0) return '';
+      const k = l.slice(0, eq).trim(), val = l.slice(eq + 1).trim();
+      if (val.startsWith('~')) {
+        const [, so, sf] = val.slice(1).split('.');
+        return `    ${v}["values"]["${k}"] = modelJson["data"].FirstOrDefault(a => a["name"].ToString() == "${so}")?["values"]["${sf}"];`;
+      }
+      return `    ${v}["values"]["${k}"] = "${val}";`;
     }).filter(Boolean).join('\n');
-    return `    var arr = (JArray)modelJson["data"];
-    var obj = new JObject(); obj["name"] = "${objName}"; obj["values"] = new JObject();
-${fLines}
-    arr.Add(obj);`;
+    return { kind:'standalone', code:
+      `    var ${v} = new JObject(); ${v}["name"] = "${objName}"; ${v}["values"] = new JObject();\n` +
+      `${fLines}\n    ((JArray)modelJson["data"]).Add(${v});`
+    };
   },
   'build-comment'(op) {
-    const {object:obj,field,parts=''} = op.data;
-    if (!obj||!field) return `@* Build comment: fill in object and field *@`;
-    const pLines = parts.split('\n').filter(l=>l.trim()).map(l=>{
-      const eq=l.indexOf('='); if(eq<0) return null;
-      const label=l.slice(0,eq).trim(), val=l.slice(eq+1).trim();
-      if(val.startsWith('"')&&val.endsWith('"')) return `"${label}: " + ${val}`;
-      const [vo,vf]=val.split('.'); return `"${label}: " + x?["values"]["${vf}"]?.ToString()`;
+    const {object:obj, field, parts=''} = op.data;
+    if (!obj || !field) return { kind:'comment', code:`@* Build comment: fill in object and field *@` };
+    const v = tableVarName(obj);
+    const pLines = parts.split('\n').filter(l => l.trim()).map(l => {
+      const eq = l.indexOf('='); if (eq < 0) return null;
+      const label = l.slice(0, eq).trim(), val = l.slice(eq + 1).trim();
+      if (val.startsWith('"') && val.endsWith('"')) return `"${label}: " + ${val}`;
+      const [, vf] = val.split('.');
+      return `"${label}: " + ${v}["values"]["${vf}"]?.ToString()`;
     }).filter(Boolean);
-    return `    var x = modelJson["data"].FirstOrDefault(a => a["name"].ToString() == "${obj}");
-    if (x != null) { x["values"]["${field}"] = ${pLines.join('\n        + "  |  " + ')||'""'}; }`;
+    return { kind:'table', table:obj, lines:[
+      `        ${v}["values"]["${field}"] = ${pLines.join(' + "  |  " + ') || '""'};`
+    ]};
   },
   'date-copy'(op) {
-    const {object:obj,startTarget,endTarget,endFallback} = op.data;
-    if (!obj) return `@* Date copy: fill in object *@`;
-    const lines=[];
-    if(startTarget) lines.push(`        if (x["values"]["START_DATE"]?.ToString() != "") x["values"]["${startTarget}"] = x["values"]["START_DATE"];`);
-    if(endTarget&&endFallback) lines.push(`        x["values"]["${endTarget}"] = x["values"]["ACTUAL_END_DATE"]?.ToString() != "" ? x["values"]["ACTUAL_END_DATE"] : x["values"]["${endFallback}"];`);
-    return `    var x = modelJson["data"].FirstOrDefault(a => a["name"].ToString() == "${obj}");
-    if (x != null) {\n${lines.join('\n')}\n    }`;
+    const {object:obj, startTarget, endTarget, endFallback} = op.data;
+    if (!obj) return { kind:'comment', code:`@* Date copy: fill in object *@` };
+    const v = tableVarName(obj);
+    const lines = [];
+    if (startTarget) lines.push(
+      `        if (!string.IsNullOrEmpty(${v}["values"]["START_DATE"]?.ToString())) ${v}["values"]["${startTarget}"] = ${v}["values"]["START_DATE"];`);
+    if (endTarget && endFallback) lines.push(
+      `        ${v}["values"]["${endTarget}"] = !string.IsNullOrEmpty(${v}["values"]["ACTUAL_END_DATE"]?.ToString()) ? ${v}["values"]["ACTUAL_END_DATE"] : ${v}["values"]["${endFallback}"];`);
+    return { kind:'table', table:obj, lines };
   },
   'doc-type-remap'(op) { return G['value-remap'](op); },
   'clean-string'(op) {
-    const {object:obj,field,ops='trim'} = op.data;
-    if (!obj||!field) return `@* Clean string: fill in object and field *@`;
+    const {object:obj, field, ops='trim'} = op.data;
+    if (!obj || !field) return { kind:'comment', code:`@* Clean string: fill in object and field *@` };
+    const v = tableVarName(obj);
     const chain = ops==='lower'?'.ToLower()':ops==='upper'?'.ToUpper()':ops==='trim-lower'?'.Trim().ToLower()':'.Trim()';
-    return `    var x = modelJson["data"].FirstOrDefault(a => a["name"].ToString() == "${obj}");
-    if (x != null && x["values"]["${field}"] != null) { x["values"]["${field}"] = x["values"]["${field}"].ToString()${chain}; }`;
+    return { kind:'table', table:obj, lines:[
+      `        if (${v}["values"]["${field}"] != null) ${v}["values"]["${field}"] = ${v}["values"]["${field}"].ToString()${chain};`
+    ]};
   },
 };
 
@@ -1105,8 +1411,48 @@ function buildGenerate() {
   const out = document.getElementById('builder-output');
   const btn = document.getElementById('builder-copy-btn');
   if (!opList.length) { out.value = ''; btn.disabled = true; return; }
-  const blocks = opList.map(op => (G[op.type] ? G[op.type](op) : `@* Unknown: ${op.type} *@`));
-  out.value = `@{\n${blocks.join('\n\n')}\n}\n@Raw(modelJson.ToString())`;
+
+  // Get descriptors for all ops
+  const descs = opList.map(op => G[op.type] ? G[op.type](op) : { kind:'comment', code:`@* Unknown: ${op.type} *@` });
+
+  // Collect all unique tables needed (table ops + standalone ops that reference tables)
+  const neededTables = new Set();
+  for (const d of descs) {
+    if (d.kind === 'table') neededTables.add(d.table);
+    if (d.kind === 'standalone' && d.tables) d.tables.forEach(t => neededTables.add(t));
+  }
+
+  // Declare one variable per unique table
+  const decls = [...neededTables].map(t =>
+    `    var ${tableVarName(t)} = modelJson["data"].FirstOrDefault(a => a["name"].ToString() == "${t}");`
+  ).join('\n');
+
+  // Group consecutive table ops that share the same table into one if block
+  const groups = [];
+  for (const d of descs) {
+    if (d.kind === 'table') {
+      const last = groups[groups.length - 1];
+      if (last && last.kind === 'table' && last.table === d.table) {
+        last.lines.push(...d.lines);
+      } else {
+        groups.push({ kind:'table', table:d.table, lines:[...d.lines] });
+      }
+    } else {
+      groups.push(d);
+    }
+  }
+
+  // Render groups
+  const blocks = groups.map(g => {
+    if (g.kind === 'table') {
+      const v = tableVarName(g.table);
+      return `    if (${v} != null) {\n${g.lines.join('\n')}\n    }`;
+    }
+    return g.code;
+  });
+
+  const body = (decls ? decls + '\n\n' : '') + blocks.join('\n\n');
+  out.value = `@{\n${body}\n}\n@Raw(modelJson.ToString())`;
   btn.disabled = false;
 }
 
@@ -1120,8 +1466,17 @@ async function copyBuilder() {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 checkReady();
+checkTestReady();
 showPage('build');
 loadConfig();
+
+// Close insert popover when clicking outside it
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('insert-popover')?.closest('.insert-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('insert-popover')?.classList.remove('open');
+  }
+});
 </script>
 </body>
 </html>

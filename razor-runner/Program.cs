@@ -54,14 +54,19 @@ class Program
 		}
 		catch (Exception ex)
 		{
-			var msg = ex.Message;
-			if (ex.InnerException != null)
-				msg += "\n" + ex.InnerException.Message;
-			WriteError(msg);
+			WriteErrorFull(ex);
 			return 1;
 		}
 	}
 
 	static void WriteError(string msg) =>
 		Console.Error.WriteLine(JsonConvert.SerializeObject(new { error = msg }));
+
+	static void WriteErrorFull(Exception ex)
+	{
+		var msg = ex.Message + "\n--- STACK ---\n" + ex.StackTrace;
+		if (ex.InnerException != null)
+			msg += "\n--- INNER ---\n" + ex.InnerException.Message + "\n" + ex.InnerException.StackTrace;
+		Console.Error.WriteLine(JsonConvert.SerializeObject(new { error = msg }));
+	}
 }

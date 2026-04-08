@@ -7,15 +7,20 @@ COPY razor-runner/ ./
 RUN dotnet publish -c Release \
       -r linux-x64 \
       --self-contained true \
-      -p:PublishSingleFile=true \
-      -p:IncludeNativeLibrariesForSelfExtract=true \
+      -p:PublishSingleFile=false \
       -o /out
 
 # ── Stage 2: Node app with the Linux razor-runner binary ──────────────────────
 FROM node:20-slim
 
-# glibc is present in node:20-slim (Debian Bookworm)
-# Invariant globalization mode — we don't need culture-sensitive .NET ops
+# .NET self-contained binaries need libssl and libicu at runtime.
+# node:20-slim (Debian Bookworm) strips these out — install them explicitly.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      libssl3 \
+      libicu72 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Invariant globalization mode — avoids needing full ICU data
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
 # Run as non-root for security

@@ -17,7 +17,14 @@
       "Bash(dotnet publish:*)",
       "Bash(powershell -Command \"\\(Get-Item 'F:\\\\code_projects\\\\razorgen\\\\razor-runner-dist\\\\razor-runner.exe'\\).Length / 1MB\")",
       "Bash(ls f:/code_projects/razorgen/.env* f:/code_projects/razorgen/.gitignore f:/code_projects/razorgen/.github)",
-      "Bash(cat f:/code_projects/razorgen/.github/workflows/*.yml)"
+      "Bash(cat f:/code_projects/razorgen/.github/workflows/*.yml)",
+      "Bash(dotnet script:*)",
+      "Bash(dotnet fsi:*)",
+      "Bash(dotnet-script /tmp/CheckInterface.cs)",
+      "Bash(mkdir -p /tmp/reflect)",
+      "Bash(dotnet run:*)",
+      "Bash(\"f:/code_projects/razorgen/razor-runner-dist/razor-runner.exe\" /tmp/test-template.cshtml /tmp/test-input.json)",
+      "Bash(echo \"EXIT: $?\")"
     ]
   }
 }

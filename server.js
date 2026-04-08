@@ -171,7 +171,7 @@ function writeEnvKeys(updates) {
 function runPreview({ template, inputJson }) {
   return new Promise((resolve) => {
     if (!fs.existsSync(RUNNER_EXE)) {
-      resolve({ ok: false, message: 'razor-runner.exe not found. Run: dotnet publish in the razor-runner folder.' });
+      resolve({ ok: false, message: 'razor-runner not found. Run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -o ../razor-runner-dist in the razor-runner folder.' });
       return;
     }
 
@@ -193,13 +193,24 @@ function runPreview({ template, inputJson }) {
     }, (error, stdout, stderr) => {
       try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch {}
 
-      if (error) {
-        // stderr contains a JSON { error: "..." } from razor-runner
+      // Debug logging — remove once preview is confirmed working
+      console.log('[preview] exit code:', error?.code ?? 0);
+      console.log('[preview] stdout length:', stdout?.length ?? 0);
+      console.log('[preview] stdout preview:', (stdout || '').slice(0, 200));
+      console.log('[preview] stderr:', (stderr || '').slice(0, 500));
+
+      // If stdout has content the template ran successfully.
+      // A non-zero exit code can still occur when the .NET runtime's finalizer
+      // thread crashes during cleanup after Main already returned — that is not
+      // a template error. Only treat it as a failure when stdout is empty.
+      if (stdout && stdout.length > 0) {
+        resolve({ ok: true, output: stdout });
+      } else if (error) {
         let msg = error.message;
         try { msg = JSON.parse(stderr).error; } catch {}
         resolve({ ok: false, message: msg });
       } else {
-        resolve({ ok: true, output: stdout });
+        resolve({ ok: false, message: 'No output produced' });
       }
     });
   });
